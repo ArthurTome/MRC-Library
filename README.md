@@ -1,12 +1,5 @@
 # MRC-Library
-This is a study project to develop a modern C++ library for simulating mobile radio channels based on the sum of sinusoids method (and correlated methods).
-
-```cpp
-void main()
-{
-
-}
-```
+This is a study project to develop a modern C++ library for simulating mobile radio channels based on the Sum of Cisoids method (and correlated methods).
 
 # Bibliography
 1. Patzold, Matthias. Mobile Radio Channels 2º.

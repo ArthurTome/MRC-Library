@@ -1,9 +1,12 @@
-// class templates
 #include <iostream>
-using namespace std;
+#include "MRC.hpp"
 
-int main () {
-  cout << "Hello World\n";
+int main(int argc, char *argv[])
+{
+  SoC <double, 10>  channel;
+  channel.Calc_EMEDS(97, 1);
+  channel.Calc_SoC();
+  //channel.Get();
 
-return 0;
+  return 0;
 }
