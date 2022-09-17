@@ -33,4 +33,9 @@
 
 #folders
 .vscode/*
+.vs/*
+src/out/*
+
+#vs files
+*.json
 
