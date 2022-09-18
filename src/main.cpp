@@ -1,40 +1,57 @@
 /*
+
+//MAIN CODE
 #include <iostream>
+#include <memory>
 #include "MRC.hpp"
 
+#define N 10
+
+using namespace std;
 
 int main(int argc, char *argv[])
 {
-	SoC <float, 10>channel;
-	channel.Comp_model(1, 91);
-    channel.Calc_SoC();
 
+    float T  = 0.20;
+    float Ts = 0.01;
 
-  return 0;
+    complex<float> mu[T/Ts + 1];
+
+    //Config Simulation 
+	SoC <float, N>channel;
+	channel.Comp_model(1, 91);      //EMEDS sig = 1 Fmax = 91Hz
+    channel.Calc_SoC(1e-5, 0.25);   //SoC vector simulation, take vector for SoC
+
+    //
+    
+    
+    return 0;
 }
 
 */
 
+///*
+
+//TESTE CODES
 #include <complex>
-#include <random>
 #include <iostream>
 
+
 using namespace std;
+float T = 20;
+float Ts = 0.1;
+int c = 0;
 
 int main()
 {
-    random_device rd;  //Will be used to obtain a seed for the random number engine
-    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    uniform_real_distribution<float> distrib(0, 2*3.14);
+    complex<double> Uf[] = { {1, 2},{3, 4} };
+    complex<double>* a = &Uf[0];
 
-    complex<float> c;
-    complex<float> c1(5, 6);
-    complex<float> c2(3, 5);
-
-    for (int n = 0; n < 10; ++n) {
-        c = (4, distrib(gen));
-        cout << c << ' ';
+    for (float i = 0; i <= T/Ts; i++) {
+        c++;
+        cout << i << ' ';
     }
-    cout << '\n';
+    cout << '\n' << c << '\n' << (T/Ts + 1);
 }
 
+//*/
