@@ -1,6 +1,6 @@
 #include <random>
 #include <complex>
-#include <numbers>
+//#include <numbers>
 
 
 #define PI 3.14159265358979323846
@@ -9,16 +9,16 @@ template <class datat, short N>
 class SoC{
     /* data */
     // Model parameters for the compute
-    datat mod[N];         // route amplitude
-    datat freq[N];        // doppler frequency
-    datat phas[N];        // phase deviation
-    datat mu [N];         // channel model
-    //short N;              // number of elements
+    datat mod[N];                       // route amplitude
+    datat freq[N];                      // doppler frequency
+    datat phas[N];                      // phase deviation
+    std::complex<datat> mu [N];         // channel model
+    //short N;                          // number of elements
 
     // Vision line constants parameters for the compute model
-    datat m_mod[N];       // route amplitude
-    datat m_freq[N];      // doppler frequency
-    datat m_phas[N];      // phase deviation
+    datat m_mod[N];                     // route amplitude
+    datat m_freq[N];                    // doppler frequency
+    datat m_phas[N];                    // phase deviation
 public:
     /* functions */
     void Calc_SoC();
@@ -32,11 +32,10 @@ public:
 template <class datat, short N>
 void SoC<datat, N>::Calc_SoC()
 {
-
-    short i = 1;
-    while (i <= N)
+    for (short i = 0; i <= N; i++)
     {
-        mu[i] += mod[i] * exp(0, 2 * PI * freq[i] + phas[i]);
+        //C1*EXP(i*[2pi*F + Theta])
+        mu[i] = std::complex<datat>(mod[i],0) * exp(std::complex<datat>(0, 2 * PI * freq[i] + phas[i]));
     }
 }
 
@@ -62,7 +61,7 @@ void SoC<datat, N>::Comp_model(datat sig, datat Fmax)
     std::uniform_real_distribution<datat> distrib(0, 2 * 3.14);
 
     short i = 1;
-    while (i <= N)
+    for (short i = 0; i <= N; i++)
     {
         mod[i] = sig * sqrt(2 / N);
         freq[i] = Fmax * cos((2 * PI * (i - 0.25) / N));
@@ -78,7 +77,7 @@ void SoC<datat, N>::Comp_model(datat sig)
     short i = 1;
     double sum_mod = 0;
 
-    while (i <= N - 1)
+    for (short i = 0; i <= (N - 1); i++)
     {
         sum_mod += mod[i] * mod[i];
     }
