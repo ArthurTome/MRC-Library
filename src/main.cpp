@@ -28,13 +28,16 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-*/
+//*/
 
 ///*
 
 //TESTE CODES
 #include <complex>
 #include <iostream>
+#include <numbers>
+
+#define PI 3.14159265358979323846
 
 
 using namespace std;
