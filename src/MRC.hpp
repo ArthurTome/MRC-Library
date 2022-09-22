@@ -1,9 +1,13 @@
 #include <complex>
+#include <math.h>
 #include <random>
 
 #define PI 3.14159265358979323846
 
+using namespace std;
+
 template <class datat, short N>
+
 class SoC{
     /* data */
     // Model parameters for the compute
@@ -17,25 +21,28 @@ class SoC{
 
 public:
     /* functions */
-    void Calc_SoC(datat T, datat Ts);
-    void Define_VLC(datat T_mod, datat T_freq, datat T_phas);
+    void Calc_SoC(complex<datat> *mu,datat T, datat Ts);
+    void Define_VLC(complex<datat>* vlc, datat T, datat Ts, datat T_mod, datat T_freq, datat T_phas);
     void Comp_model(datat sig, datat Fmax);     //EMEDS
     void Comp_model(datat sig);                 //LPNM
     //void Comp_model(datat Fmax);                //
 };
 
 /// @brief Compute Sum of Cisoids model
+/// @param mu_t Pointer to external SoC buffer
 /// @param T simulation Time, t = [0, T]
 /// @param Ts time step
 template <class datat, short N>
-void SoC<datat, N>::Calc_SoC(datat T, datat Ts) //takes an empty pointer and returns filled
+void SoC<datat, N>::Calc_SoC(complex<datat> *mu_t ,datat T, datat Ts) //takes an empty pointer and returns filled
 {
-    for (datat t = 0; t <= T/Ts; t++)
+
+    int num = (T / Ts) + 1;
+    for (int t = 0; t < num; t++)
     {
-        for (short i = 0; i <= N; i++)              //Compute 
+        for (short i = 1; i < N + 1; i++)              //Compute 
         {
         //C1*EXP(i*[2pi*F*t + Theta])
-            mu[t] += std::complex<datat>(mod[i], 0) * exp(std::complex<datat>(0, 2 * PI * freq[i] + phas[i])); //Pointer return not implemented
+            mu_t[t] += complex<datat>(mod[i-1], 0) * exp(complex<datat>(0, 2 * PI * freq[i-1] * (t * Ts) + phas[i-1]));
         }
     }
 }
@@ -45,15 +52,20 @@ void SoC<datat, N>::Calc_SoC(datat T, datat Ts) //takes an empty pointer and ret
 //{}
 
 /// @brief Compute Vision Line Component
-/// @param 
-/// @param
+/// @param vlc Pointer to external Line of Sight buffer
+/// @param T total time size
+/// @param Ts time step
+/// @param T_mod amplitude component for Line of Sight
+/// @param T_freq frequecy component for Line of Sight
+/// @param T_phas phase component for Line of Sight
 template <class datat, short N>
-void SoC<datat, N>::Define_VLC(datat T_mod, datat T_freq, datat T_phas)
+void SoC<datat, N>::Define_VLC(complex<datat> *vlc, datat T, datat Ts, datat T_mod, datat T_freq, datat T_phas)
 {
-    //for (datat t = 0; t <= T/Ts; t++)     //Create time vector simulation
-    //{
-    //    mu[i] += std::complex<datat>(mod[i], 0) * exp(std::complex<datat>(0, 2 * PI * freq[i] + phas[i])); //time vector not implemented
-    //}
+    int num = (T / Ts) + 1;
+    for (int t = 0; t < num; t++)     //Create time vector simulation
+    {
+        vlc[t] += complex<datat>(T_mod, 0) * exp(complex<datat>(0, 2 * PI * T_freq * (t * Ts) + T_phas));
+    }
 }
 
 /// @brief Compute Parameters by Extended Method of Exact Doppler Spread (EMEDS)
@@ -64,16 +76,17 @@ template <class datat, short N>
 void SoC<datat, N>::Comp_model(datat sig, datat Fmax)
 {
     // Fmax = 91 and sig = 1, text paramters p:223 fig:5.69
-    std::random_device rd;  //Will be used to obtain a seed for the random number engine
-    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<datat> distrib(0, 2 * 3.14);
+    random_device rd;  //Will be used to obtain a seed for the random number engine
+    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    uniform_real_distribution<datat> distrib(0, 2 * PI);
 
-    for (short i = 0; i <= N; i++)
+    for (short i = 1; i < N + 1; i++)
     {
-        mod[i] = sig * sqrt(2 / N);
-        freq[i] = Fmax * cos((2 * PI * (i - 0.25) / N));
-        phas[i] = distrib(gen);
+        phas[i - 1] = distrib(gen);
+        mod[i - 1] = sig * sqrt(2 / (datat)N);
+        freq[i - 1] = Fmax * cos((i - 0.25) * (2 * PI / (datat)N));
     }
+
 }
 
 /// @brief Compute Parameters by Lp-Norm Method (LPNM) 
