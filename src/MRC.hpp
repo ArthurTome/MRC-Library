@@ -1,3 +1,6 @@
+#ifndef MRC_HPP
+#define MRC_HPP
+
 #include <complex>
 //#include <math.h>
 #include <cmath>
@@ -89,3 +92,5 @@ public:
   }
   //void Comp_model(datat Fmax);                //
 };
+
+#endif
