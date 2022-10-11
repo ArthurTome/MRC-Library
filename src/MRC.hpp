@@ -11,86 +11,122 @@
 
 using namespace std;
 
-template <class datat, short N>
-class SoC{
+/// @brief class for simulation based on sum of cisoids
+/// OBS: The time vector, despite being correctly defined, 
+/// for reasons of rounding the expression (t/ts) has one 
+/// less element than the theoretical
+/// @param datat the type for class, float or double
+/// @param N number of cisoids
+template <class datat, short N> class SoC{
   /* data */
   // Model parameters for the compute
   array<datat, N> mod;                       // route amplitude
   array<datat, N> freq;                      // doppler frequency
   array<datat, N> phas;                      // phase deviation
 
-  //Smart Pointers for time simulation
-  //std::complex<datat> mu[N];          // Sum of Cisoids Realization
-  //std::complex<datat> VLC;            // Vision Line Component
-
 public:
-  /* functions */
-  /// @brief Compute Sum of Cisoids model taking an empty pointer and returning it filled
-  /// @param mu_t Pointer to external SoC buffer
-  /// @param T simulation Time, t = [0, T]
-  /// @param Ts time step
-  void Calc_SoC(complex<datat> *mu,datat T, datat Ts) {
-    int num = (T / Ts) + 1;
-    for (int t = 0; t < num; t++)
-      {
-        for (short i = 1; i < N + 1; i++)              //Compute 
-          {
-            //C1*EXP(i*[2pi*F*t + Theta])
-            mu_t[t] += complex<datat>(mod[i-1], 0) * exp(complex<datat>(0, 2 * M_PI * freq[i-1] * (t * Ts) + phas[i-1]));
-          }
-      }
-  }
+    /* functions */
+    /// @brief Compute Jakes Ideal Auto Correlation 
+    /// @param irxx Pointer to external rxx buffer
+    /// @param t simulation Time, t = [0, T]
+    /// @param ts time step
+    void IRXX(complex<datat>* rxx, datat sig, datat freq_m, datat t, datat ts) {
+        int num = (t / ts) + 1;             // length for time, [0, t - ts]
+        for (int t_i = 0; t_i < num; t_i++)
+        {
+            rxx[t_i] = pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_m * t_i * ts);
+        }
+    }
 
-  //void Calc_VLC(datat &m, datat T, datat Ts) //takes an empty pointer and returns filled
-  //{}
+    /// @brief Compute Jakes Model Auto Correlation 
+    /// @param rxx Pointer to external irxx buffer
+    /// @param t simulation Time, t = [0, T]
+    /// @param ts time step
+    void RXX(complex<datat>* irxx, datat t, datat ts) {
+        int num = (t / ts) + 1;
+        for (int t_i = 0; t_i < num; t_i++)
+        {
+            for (short i = 0; i < N; i++)              //Compute 
+            {
+                //C1*EXP(i*[2pi*F*t + Theta])
+                irxx[t_i] += cos(2 * M_PI * freq[i] * t_i * ts) * pow(mod[i],2) / 2;
+            }
+        }
+    }
+    
+    /// @brief Compute Sum of Cisoids model taking an empty pointer and returning it filled
+    /// @param mu_t Pointer to external SoC buffer
+    /// @param t simulation Time, t = [0, T]
+    /// @param ts time step
+    void Comp_SoC(complex<datat> *mu, datat t, datat ts) {
+      int num = (t / ts) + 1;
+      for (int t_i = 0; t_i < num; t_i++)
+        {
+          for (short i = 1; i < N + 1; i++)              //Compute 
+            {
+              //C1*EXP(i*[2pi*F*t + Theta])
+              mu[t_i] += complex<datat>(mod[i-1], 0) * exp(complex<datat>(0, 2 * M_PI * freq[i-1] * (t_i * ts) + phas[i-1]));
+            }
+        }
+    }
+    
+    
+    /// @brief Compute Vision Line Component
+    /// @param vlc Pointer to external Line of Sight buffer
+    /// @param t total time size
+    /// @param ts time step
+    /// @param t_mod amplitude component for Line of Sight
+    /// @param t_freq frequecy component for Line of Sight
+    /// @param t_phas phase component for Line of Sight
+    void Define_VLC(complex<datat>* vlc, datat t, datat ts, datat t_mod, datat t_freq, datat t_phas)
+    {
+      int num = (t / ts) + 1;
+      for (int t_i = 0; t_i < num; t_i++)     //Create time vector simulation
+        {
+          vlc[t_i] += complex<datat>(t_mod, 0) * exp(complex<datat>(0, 2 * M_PI * t_freq * (t_i * ts) + t_phas));
+        }
+    }
 
-  /// @brief Compute Vision Line Component
-  /// @param vlc Pointer to external Line of Sight buffer
-  /// @param T total time size
-  /// @param Ts time step
-  /// @param T_mod amplitude component for Line of Sight
-  /// @param T_freq frequecy component for Line of Sight
-  /// @param T_phas phase component for Line of Sight
-  void Define_VLC(complex<datat>* vlc, datat T, datat Ts, datat T_mod, datat T_freq, datat T_phas)
-  {
-    int num = (T / Ts) + 1;
-    for (int t = 0; t < num; t++)     //Create time vector simulation
-      {
-        vlc[t] += complex<datat>(T_mod, 0) * exp(complex<datat>(0, 2 * M_PI * T_freq * (t * Ts) + T_phas));
-      }
-  }
-  /// @brief Compute Parameters by Extended Method of Exact Doppler Spread (EMEDS)
-  /// 
-  /// @param Fmax Maximum Doppler Frequency
-  /// @param sig Standard Deviation
-  void Comp_model(datat sig, datat Fmax)
-  {
-    // Fmax = 91 and sig = 1, text paramters p:223 fig:5.69
-    random_device rd;  //Will be used to obtain a seed for the random number engine
-    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    uniform_real_distribution<datat> distrib(0, 2 * M_PI);
-
-    for (short i = 1; i < N + 1; i++)
-      {
-        phas[i - 1] = distrib(gen);
-        mod[i - 1] = sig * sqrt(2 / (datat)N);
-        freq[i - 1] = Fmax * cos((i - 0.25) * (2 * M_PI / (datat)N));
-      }
-  }
-  /// @brief Compute Parameters by Lp-Norm Method (LPNM) 
-  /// @param sig Standard Deviation
-  void Comp_model(datat sig)
-  {
-    double sum_mod = 0;
-
-    for (short i = 0; i <= (N - 1); i++)
-      {
-        sum_mod += mod[i] * mod[i];
-      }
-
-    mod[N] = sqrt(2 * sig * sig - sum_mod);
-  }
-  //void Comp_model(datat Fmax);                //
+    /// @brief Compute Phase
+    void Comp_phas() {
+        random_device rd;  //Will be used to obtain a seed for the random number engine
+        mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+        uniform_real_distribution<datat> distrib(0, 2 * M_PI);
+    
+        for (short i = 1; i < N + 1; i++)
+        {
+            phas[i - 1] = distrib(gen);
+        }
+    
+    }
+    
+    /// @brief Compute Parameters by Extended Method of Exact Doppler Spread (EMEDS)
+    /// @param sig Standard Deviation
+    /// @param freq_m Max Frequency
+    void Comp_EMEDS(datat sig, datat freq_m)
+    {
+      // Fmax = 91 and sig = 1, text paramters p:223 fig:5.69
+    
+        Comp_phas();
+        for (short i = 1; i < N + 1; i++)
+        {
+          mod[i - 1] = sig * sqrt(2 / (datat)N);
+          freq[i - 1] = freq_m * cos((i - 0.25) * (2 * M_PI / (datat)N));
+        }
+    }
+    /// @brief Compute Parameters by Method of Equal Areas (MEA) 
+    /// @param sig Standard Deviation
+    /// @param freq_m Max Frequency
+    void Comp_GMEA(datat sig, datat freq_m)
+    {
+        Comp_phas();
+        for (short i = 1; i < N + 1; i++)
+        {
+            mod[i - 1] = sig * sqrt(2 / (datat)N);        //A same of EMEDS
+            freq[i - 1] = freq_m * sin(M_PI * i / (2 * (datat)N));
+        }
+    }
+    //void Comp_model(datat Fmax);                //
 };
 
 #endif

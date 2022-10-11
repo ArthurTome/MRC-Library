@@ -5,27 +5,29 @@
 #include <memory>                                   //At Work
 #include "MRC.hpp"
 
-#define N 10
+#define N 20
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
 
-    float T  = 0.25;
-    float Ts = 0.001;
+    float t  = 0.08;
+    float ts = 0.001;
 
-    int num = T / Ts + 1;
+    int num = t / ts + 1;
 
     //Config Simulation 
     complex<float> mu[num];                         //Buffer to SoC
 	SoC <float, N> channel;
 
-	channel.Comp_model(1, 91);                      //EMEDS sig = 1 Fmax = 91Hz
-    channel.Calc_SoC(&mu[0], T, Ts);                //SoC vector simulation, take vector for SoC
+	channel.Comp_GMEA(1, 91);                       //EMEDS sig = 1 Fmax = 91Hz
+    //channel.Comp_SoC(&mu[0], t, ts);              //SoC vector simulation, take vector for SoC
+    //channel.RXX(&mu[0], t, ts);                   //SoC vector simulation, take vector for SoC
+    channel.IRXX(&mu[0], 1, 91, t, ts);             //SoC vector simulation, take vector for SoC
 
-    for (int t = 0; t < num; t++) cout << '[' << mu[t].real() << "," << mu[t].imag() << "],";
-
+    //for (int t = 0; t < num; t++) cout << '[' << mu[t].real() << "," << mu[t].imag() << "],";
+    for (int t_i = 0; t_i < num; t_i++) cout << mu[t_i].real() << ",";
     return 0;
 }
 
