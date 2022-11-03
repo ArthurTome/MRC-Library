@@ -2,32 +2,54 @@
 
 //MAIN CODE
 #include <iostream>
-#include <memory>                                   //At Work
+#include <complex>
 #include "MRC.hpp"
 
-#define N 20
+constexpr auto N = 20;
 
 using namespace std;
 
+
 int main(int argc, char *argv[])
 {
-
-    float t  = 0.08;
+    //Config Simulation
+    float t  = 0.5;
+    float tal = 0.16;
     float ts = 0.001;
+    int sig = 1;                                            // Fmax = 91 and sig = 1, text paramters p:223 fig:5.69
+    int F = 91;
 
-    int num = t / ts + 1;
+    int s_soc = t / ts + 1;                                 //size soc vector
+    int s_rxx = tal / ts + 1;                               //size rxx vector
 
-    //Config Simulation 
-    complex<float> mu[num];                         //Buffer to SoC
+    //
+    complex<float> soc[s_soc];                              //Buffer to SoC
+    complex<float> rxx[s_rxx];                              //Buffer to Rxx
+    complex<float> soc_tmp[s_soc];                          //Buffer to soc_tmp
 	SoC <float, N> channel;
 
-	channel.Comp_GMEA(1, 91);                       //EMEDS sig = 1 Fmax = 91Hz
-    //channel.Comp_SoC(&mu[0], t, ts);              //SoC vector simulation, take vector for SoC
-    //channel.RXX(&mu[0], t, ts);                   //SoC vector simulation, take vector for SoC
-    channel.IRXX(&mu[0], 1, 91, t, ts);             //SoC vector simulation, take vector for SoC
+	channel.Comp_EMEDS(sig, F);                             //EMEDS sig = 1 Fmax = 91Hz
 
-    //for (int t = 0; t < num; t++) cout << '[' << mu[t].real() << "," << mu[t].imag() << "],";
-    for (int t_i = 0; t_i < num; t_i++) cout << mu[t_i].real() << ",";
+    // Numeric iteration for soc mean
+    for (int i = 0; i < 10000; i++) {
+        channel.Comp_SoC(&soc_tmp[0], t, ts);               //SoC vector simulation, take vector for SoC
+
+        for (int t = 0; t < s_soc; t++)
+        {
+            soc[t] += soc_tmp[t];
+            if (i != 0) rxx[t] /= 2;
+        }
+    }
+
+    channel.NRXX(&soc[0], &rxx[0], t, tal, ts);             //Numeric Correlation vector simulation
+    
+
+    //channel.IRXX(&rxx[0], 1, 91, t, ts);                  //JAKES Correlation vector simulation
+    //channel.RXX(&rxx[0], t, ts);                          //Parametric Correlation vector simulation
+    //for (int t = 0; t < s_soc; t++) cout << '[' << soc[t].real() << "," << soc[t].imag() << "],";
+
+
+    for (int t_i = 0; t_i < (int)(tal/ts) + 1; t_i++) cout << "," << rxx[t_i].real();       // Print for python
     return 0;
 }
 
