@@ -2,12 +2,9 @@
 #define MRC_HPP
 
 #include <complex>
-//#include <math.h>
 #include <cmath>
 #include <random>
 #include <array>
-
-// #define PI 3.14159265358979323846
 
 using namespace std;
 
@@ -30,66 +27,67 @@ public:
     /// @param irxx Pointer to external rxx buffer
     /// @param t simulation Time, t = [0, T)
     /// @param ts time step
-    void IRXX(complex<datat>* irxx, datat sig, datat freq_m, datat t, datat ts) {
+    void IRXX(datat* rxx, datat sig, datat freq_m, datat t, datat ts) {
         int num = (t / ts) + 1;             // length for time, [0, t - ts]
         for (int t_i = 0; t_i < num; t_i++)
         {
-            irxx[t_i] = pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_m * t_i * ts);
+            rxx[t_i] = 0;
+            rxx[t_i] = pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_m * t_i * ts);
         }
     }
 
-    /// @brief Compute Jakes Model Auto Correlation 
+    /// @brief Compute Model Auto Correlation 
     /// @param rxx Pointer to external irxx buffer
     /// @param t simulation Time, t = [0, T)
     /// @param ts time step
-    void RXX(complex<datat>* rxx, datat t, datat ts) {
+    void RXX(datat* rxx, datat t, datat ts) {
         int num = (t / ts) + 1;
         for (int t_i = 0; t_i < num; t_i++)
         {
+            rxx[t_i] = 0;
             for (short i = 0; i < N; i++)                       //Compute 
             {
                 //C1*EXP(i*[2pi*F*t + Theta])
-                rxx[t_i] += cos(2 * M_PI * freq[i] * t_i * ts) * pow(mod[i],2);
+                rxx[t_i] += cos(2 * M_PI * freq[i] * t_i * ts) * pow(mod[i],2)/2;
             }
-            rxx[t_i] /= 2;
         }
     }
 
     /// @brief Compute Numeric Model Auto Correlation 
+    /// ref. https://mathworld.wolfram.com/Autocorrelation.html
     /// @param soc Pointer to external soc buffer
     /// @param nrxx Pointer to external nrxx buffer
     /// @param t simulation Time, t   = [0, T)
     /// @param tal Coerence Time, tal = [0, tal)
     /// @param ts time step
-    void NRXX(complex<datat>* soc ,complex<datat>* nrxx ,datat t, datat tal ,datat ts) {
+    void NRXX(complex<datat>* soc ,datat* rxx ,datat t ,datat ts) {
         int s_soc = (t / ts) + 1;
-        int s_rxx = (tal / ts) + 1;
 
-        for (int t_i = 0; t_i < s_rxx; t_i++)
+        for (int t_i = 0; t_i < s_soc; t_i++)
         {
-            for (short i = t_i; i < s_soc; i++)                 //Compute 
+            rxx[t_i] = 0;
+            for (short i = t_i; i < s_soc; i++)
             {
-                nrxx[t_i] += (soc[i-t_i] * conj(soc[i]))/(abs(soc[i - t_i])*abs(conj(soc[i])));
+                rxx[t_i] += (soc[i-t_i] * conj(soc[i])).real();
             }
-            nrxx[t_i] /= s_soc;
-        }
+        }                    
     }
     
     /// @brief Compute Sum of Cisoids model taking an empty pointer and returning it filled
     /// @param mu_t Pointer to external SoC buffer
     /// @param t simulation Time, t = [0, T)
     /// @param ts time step
-    void Comp_SoC(complex<datat> *soc, datat t, datat ts) {
+    void Comp_SoC(complex<datat>* soc, datat t, datat ts) {
         int num = (t / ts) + 1;
-        datat temp = 0;
         Comp_phas();
 
         for (int t_i = 0; t_i < num; t_i++)
         {
-            for (short i = 1; i < N + 1; i++)                     //Compute 
+            soc[t_i] = 0;
+            for (short i = 0; i < N; i++)                     //Compute 
             {
                 //C1*EXP(i*[2pi*F*t + Theta])
-                soc[t_i] += complex<datat>(mod[i-1], 0) * exp(complex<datat>(0, 2 * M_PI * freq[i-1] * (t_i * ts) + phas[i-1]));
+                soc[t_i] += complex<datat>(mod[i], 0) * exp(complex<datat>(0, 2 * M_PI * freq[i] * (t_i * ts) + phas[i]));
             }
         }
     }
@@ -117,9 +115,9 @@ public:
         mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
         uniform_real_distribution<datat> distrib(0, 2 * M_PI);
     
-        for (short i = 1; i < N + 1; i++)
+        for (short i = 0; i < N; i++)
         {
-            phas[i - 1] = distrib(gen);
+            phas[i] = distrib(gen);
         }
     
     }
@@ -131,7 +129,7 @@ public:
     {
         for (short i = 1; i < N + 1; i++)
         {
-            mod[i - 1] = sig * sqrt(2 / (datat)N);
+            mod[i - 1] = sig * sqrt(2.0 / (datat)N);
             freq[i - 1] = freq_m * cos((i - 0.25) * (2 * M_PI / (datat)N));
         }
     }
