@@ -22,7 +22,6 @@ int main(int argc, char *argv[])
 
     array<complex<float>, s_soc> soc = {};
     array<float, s_soc> rxx = {};
-    array<float, s_soc> rxx_t = {};
 
     //complex<float> soc_tmp[s_soc];                        //Buffer to soc_tmp
 	SoC <float, N> channel;
@@ -31,6 +30,7 @@ int main(int argc, char *argv[])
     // Test Correlation
 	//channel.Comp_GMEA(sig, F);                              //EMEDS sig = 0.5 Fmax = 91Hz
     channel.Comp_EMEDS(sig, F);                             //EMEDS sig = 0.5 Fmax = 91Hz
+    array<float, s_soc> rxx_t = {};
 
     for (auto n = 0; n < 100; n++) {
         channel.Comp_SoC(soc.begin(), t, ts);               //SoC vector simulation, take vector for SoC

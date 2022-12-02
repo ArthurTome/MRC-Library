@@ -144,7 +144,17 @@ public:
             freq[i - 1] = freq_m * sin(M_PI * i / (2 * (datat)N));
         }
     }
-    //void Comp_model(datat Fmax);                //
+
+    void Log_Process(complex<datat>* soc, datat mean, datat sig, datat t, datat ts) {
+        int num = (t / ts) + 1;
+        array<complex<datat>, num> soc1 = {};
+
+        Comp_SoC(soc1.begin(), t, ts);
+        for (int t_i = 0; t_i < num; t_i++)
+        {
+            soc[t_i] = exp(sig * real(soc1[t_i]) + mean);
+        }
+    }
 };
 
 #endif
