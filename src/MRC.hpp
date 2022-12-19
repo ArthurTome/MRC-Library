@@ -145,15 +145,9 @@ public:
         }
     }
 
-    void Log_Process(complex<datat>* soc, datat mean, datat sig, datat t, datat ts) {
-        int num = (t / ts) + 1;
-        array<complex<datat>, num> soc1 = {};
+    void Log_Process(datat* log, complex<datat>* soc_t, datat mean, datat sig, int s_soc) {
 
-        Comp_SoC(soc1.begin(), t, ts);
-        for (int t_i = 0; t_i < num; t_i++)
-        {
-            soc[t_i] = exp(sig * real(soc1[t_i]) + mean);
-        }
+        for (int t_i = 0; t_i < s_soc; t_i++) log[t_i] = exp(sig * real(soc_t[t_i]) + mean);
     }
 };
 
