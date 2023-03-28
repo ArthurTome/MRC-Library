@@ -1,34 +1,60 @@
+/** INTERFACE BASICA EM C++
+ *  
+ *  
+*/
+
 #include <iostream>
 #include <complex>
 #include <array>
 #include "MRC.hpp"
 
-constexpr auto N = 21;
-
 using namespace std;
 
+
+int main(int argc, char *argv[]){
+    // ARGS
+    //short N = 21;
+    //loat freq = 91;
+    //float sig = 1;
+
+    // |============================================================|
+    // External vector of exernal aplications
+    array<complex<float>, 100> soc = {};
+
+    // |============================================================|
+
+    //START FUNCTION
+    SoC <float> floatSoC(21, 91, 1);                        // Initialize class <float> with frequency 91 and standard deviation 1
+    floatSoC.Comp_EMEDS();
+    floatSoC.Comp_SoC(soc.begin(), 100, 0.1);
+
+    for (auto var = soc.begin(); var != soc.end(); var++) cout << *var;
+}
+
+
+/*
 int main(int argc, char *argv[])
 {
     //Config Simulation
-    constexpr double sig = 1.0;                             // Fmax = 91 and sig = 1, text paramters p:223 fig:5.69
-    constexpr double F = 91.0;
+    double sig = 1.0;                             // Fmax = 91 and sig = 1, text paramters p:223 fig:5.69
+    double F = 91.0;
 
-    constexpr double tal = N / (4.0 * F);
-    constexpr double t  = 10.0*tal;
-    constexpr double ts = 0.0005;
+    double tal = N / (4.0 * F);
+    double t  = 10.0*tal;
+    double ts = 0.0005;
 
-    constexpr int s_soc = (int)(t / ts) + 1;                //size soc vector
+    int s_soc = (int)(t / ts) + 1;                          //size soc vector
 
     array<complex<float>, s_soc> soc = {};
     array<complex<float>, s_soc> suz = {};
     array<float, s_soc> rxx = {};
     array<float, s_soc> log = {};
 
-	SoC <float, N> channel;                                 // Create channel object
+	SoC <float> channel(21, 91, 1);                                    // Create channel object
 
 
     // Test Correlation
-	//channel.Comp_GMEA(sig, F);                              // GMEA sig = 0.5 Fmax = 91Hz
+	//channel.Comp_GMEA(sig, F);                            // GMEA sig = 0.5 Fmax = 91Hz
     channel.Comp_EMEDS(sig, F);                             // EMEDS sig = 0.5 Fmax = 91Hz
     array<float, s_soc> rxx_t = {};                         // Temporary vector for mean 
 
@@ -56,6 +82,7 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+*/
 
 // More tests: probability density function of the envelope, the level-crossing rate, and the
 // average duration of fades

@@ -4,7 +4,7 @@
 #include <complex>
 #include <cmath>
 #include <random>
-#include <array>
+//#include <array>
 
 using namespace std;
 
@@ -13,36 +13,80 @@ using namespace std;
 /// for reasons of rounding the expression (t/ts) has one 
 /// less element than the theoretical
 /// @param datat the type for class, float or double
-/// @param N number of cisoids
-template <class datat, short N> class SoC{
-  /* data */
-  // Model parameters for the compute
-  array<datat, N> mod;                       // route amplitude
-  array<datat, N> freq;                      // doppler frequency
-  array<datat, N> phas;                      // phase deviation
+template <class datat> 
+class SoC{
+    /* data */
+    // Model parameters for the compute
+    public:
+    datat *mod;                                         // Pointer to route amplitude
+    datat *freq;                                        // Pointer to doppler frequency
+    datat *phas;                                        // Pointer to phase deviation
 
-public:
+    datat freq_max;                                     // Max Frequency
+    datat sig;                                          // Standard Deviation
+    datat mean;                                         // Mean of log process
+    short N;                                            // Number of cisoids
+
     /* functions */
+
+    /// @brief Construct to class, initialize arrays of parameters
+    /// @param N Size of parameters arrays
+    /// @param freq_t frequency maximum
+    /// @param sig_t standard deviarion
+    SoC(short N_t, datat freq_t, datat sig_t):N(N_t), freq_max(freq_t), sig(sig_t)
+    {
+        mod  = new datat[N];                            // Initialize route amplitude array
+        freq = new datat[N];                            // Initialize doppler frequency array
+        phas = new datat[N];                            // Initialize phase deviation array
+
+        for (int i = 0; i < N; i++) {
+            mod[i] = 0;
+            freq[i] = 0;
+            phas[i] = 0;
+        }
+    }
+
+    SoC(short N_t, datat freq_t, datat sig_t, datat mean_t):N(N_t), freq_max(freq_t), sig(sig_t), mean(mean_t)
+    {
+        mod  = new datat[N];                            // Initialize route amplitude array
+        freq = new datat[N];                            // Initialize doppler frequency array
+        phas = new datat[N];                            // Initialize phase deviation array
+
+        for (int i = 0; i < N; i++) {
+            mod[i] = 0;
+            freq[i] = 0;
+            phas[i] = 0;
+        }
+    }
+
+    ~SoC()
+    {
+        delete[] mod;
+        delete[] freq;
+        delete[] phas;
+    }
+
     /// @brief Compute Jakes Ideal Auto Correlation 
-    /// @param irxx Pointer to external rxx buffer
-    /// @param t simulation Time, t = [0, T)
+    /// @param rxx Pointer to external rxx buffer
+    /// @param size legth of vector rxx
     /// @param ts time step
-    void IRXX(datat* rxx, datat sig, datat freq_m, datat t, datat ts) {
-        int num = (t / ts) + 1;             // length for time, [0, t - ts]
-        for (int t_i = 0; t_i < num; t_i++)
+    void IRXX(datat* rxx, datat size, datat ts)
+    {
+        //int num = (t / ts) + 1;             // length for time, [0, t - ts]
+        for (int t_i = 0; t_i < size + 1; t_i++)
         {
             rxx[t_i] = 0;
-            rxx[t_i] = pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_m * t_i * ts);
+            rxx[t_i] = pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_max * t_i * ts);
         }
     }
 
     /// @brief Compute Model Auto Correlation 
     /// @param rxx Pointer to external irxx buffer
-    /// @param t simulation Time, t = [0, T)
+    /// @param size legth of vector rxx
     /// @param ts time step
-    void RXX(datat* rxx, datat t, datat ts) {
-        int num = (t / ts) + 1;
-        for (int t_i = 0; t_i < num; t_i++)
+    void RXX(datat* rxx, datat size, datat ts) {
+        //int num = (t / ts) + 1;
+        for (int t_i = 0; t_i < size + 1; t_i++)
         {
             rxx[t_i] = 0;
             for (short i = 0; i < N; i++)                       //Compute 
@@ -56,17 +100,16 @@ public:
     /// @brief Compute Numeric Model Auto Correlation 
     /// ref. https://mathworld.wolfram.com/Autocorrelation.html
     /// @param soc Pointer to external soc buffer
-    /// @param nrxx Pointer to external nrxx buffer
-    /// @param t simulation Time, t   = [0, T)
-    /// @param tal Coerence Time, tal = [0, tal)
+    /// @param rxx Pointer to external rxx buffer
+    /// @param size legth of vector rxx
     /// @param ts time step
-    void NRXX(complex<datat>* soc ,datat* rxx ,datat t ,datat ts) {
-        int s_soc = (t / ts) + 1;
+    void NRXX(complex<datat>* soc ,datat* rxx ,datat size ,datat ts) {
+        //int s_soc = (t / ts) + 1;
 
-        for (int t_i = 0; t_i < s_soc; t_i++)
+        for (int t_i = 0; t_i < size + 1; t_i++)
         {
             rxx[t_i] = 0;
-            for (short i = t_i; i < s_soc; i++)
+            for (short i = t_i; i < size + 1 ; i++)
             {
                 rxx[t_i] += (soc[i-t_i] * conj(soc[i])).real();
             }
@@ -75,13 +118,13 @@ public:
     
     /// @brief Compute Sum of Cisoids model taking an empty pointer and returning it filled
     /// @param mu_t Pointer to external SoC buffer
-    /// @param t simulation Time, t = [0, T)
+    /// @param size legth of vector rxx
     /// @param ts time step
-    void Comp_SoC(complex<datat>* soc, datat t, datat ts) {
-        int num = (t / ts) + 1;
+    void Comp_SoC(complex<datat>* soc, int size, datat ts) {
+        //int num = size + 1;
         Comp_phas();
 
-        for (int t_i = 0; t_i < num; t_i++)
+        for (int t_i = 0; t_i < size + 1; t_i++)
         {
             soc[t_i] = 0;
             for (short i = 0; i < N; i++)                     //Compute 
@@ -95,15 +138,15 @@ public:
     
     /// @brief Compute Vision Line Component
     /// @param vlc Pointer to external Line of Sight buffer
-    /// @param t total time size
+    /// @param size legth of vector vlc
     /// @param ts time step
     /// @param t_mod amplitude component for Line of Sight
     /// @param t_freq frequecy component for Line of Sight
     /// @param t_phas phase component for Line of Sight
-    void Define_VLC(complex<datat>* vlc, datat t, datat ts, datat t_mod, datat t_freq, datat t_phas)
+    void Define_VLC(complex<datat>* vlc, datat size, datat ts, datat t_mod, datat t_freq, datat t_phas)
     {
-        int num = (t / ts) + 1;
-        for (int t_i = 0; t_i < num; t_i++)                       //Create time vector simulation
+        //int num = (t / ts) + 1;
+        for (int t_i = 0; t_i < size + 1; t_i++)                       //Create time vector simulation
         {
             vlc[t_i] += complex<datat>(t_mod, 0) * exp(complex<datat>(0, 2 * M_PI * t_freq * (t_i * ts) + t_phas));
         }
@@ -123,31 +166,27 @@ public:
     }
     
     /// @brief Compute Parameters by Extended Method of Exact Doppler Spread (EMEDS)
-    /// @param sig Standard Deviation
-    /// @param freq_m Max Frequency
-    void Comp_EMEDS(datat sig, datat freq_m)
+    void Comp_EMEDS()
     {
         for (short i = 1; i < N + 1; i++)
         {
             mod[i - 1] = sig * sqrt(2.0 / (datat)N);
-            freq[i - 1] = freq_m * cos((i - 0.25) * (2 * M_PI / (datat)N));
+            freq[i - 1] = freq_max * cos((i - 0.25) * (2 * M_PI / (datat)N));
         }
     }
     /// @brief Compute Parameters by Method of Equal Areas (MEA) 
-    /// @param sig Standard Deviation
-    /// @param freq_m Max Frequency
-    void Comp_GMEA(datat sig, datat freq_m)
+    void Comp_GMEA()
     {
         for (short i = 1; i < N + 1; i++)
         {
             mod[i - 1] = sig * sqrt(2 / (datat)N);                //A same of EMEDS
-            freq[i - 1] = freq_m * sin(M_PI * i / (2 * (datat)N));
+            freq[i - 1] = freq_max * sin(M_PI * i / (2 * (datat)N));
         }
     }
 
-    void Log_Process(datat* log, complex<datat>* soc_t, datat mean, datat sig, int s_soc) {
+    void Log_Process(datat* log, complex<datat>* soc_t, datat size, datat mean, datat sig) {
 
-        for (int t_i = 0; t_i < s_soc; t_i++) log[t_i] = exp(sig * real(soc_t[t_i]) + mean);
+        for (int t_i = 0; t_i < size; t_i++) log[t_i] = exp(sig * real(soc_t[t_i]) + mean);
     }
 };
 

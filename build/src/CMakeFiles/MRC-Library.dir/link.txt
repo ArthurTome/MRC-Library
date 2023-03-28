@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/MRC-Library.dir/main.cpp.o CMakeFiles/MRC-Library.dir/MRC.cpp.o -o MRC-Library 
