@@ -35,6 +35,7 @@
 .vscode/*
 .vs/*
 src/out/*
+build-MRC_gui-Desktop_Qt_5_7_0_GCC_64bit-Debug
 
 #vs files
 *.json

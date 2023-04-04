@@ -13,9 +13,9 @@ using namespace std;
 
 int main(int argc, char *argv[]){
     // ARGS
-    //short N = 21;
-    //loat freq = 91;
-    //float sig = 1;
+    short N = 21;
+    float freq = 91;
+    float sig = 1;
 
     // |============================================================|
     // External vector of exernal aplications
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
     // |============================================================|
 
     //START FUNCTION
-    SoC <float> floatSoC(21, 91, 1);                        // Initialize class <float> with frequency 91 and standard deviation 1
+    SoC <float> floatSoC(N, freq, sig);                        // Initialize class <float> with frequency 91 and standard deviation 1
     floatSoC.Comp_EMEDS();
     floatSoC.Comp_SoC(soc.begin(), 100, 0.1);
 

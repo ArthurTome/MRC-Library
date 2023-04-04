@@ -75,7 +75,7 @@ class SoC{
         //int num = (t / ts) + 1;             // length for time, [0, t - ts]
         for (int t_i = 0; t_i < size + 1; t_i++)
         {
-            rxx[t_i] = 0;
+            //rxx[t_i] = 0;
             rxx[t_i] = pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_max * t_i * ts);
         }
     }
@@ -102,8 +102,7 @@ class SoC{
     /// @param soc Pointer to external soc buffer
     /// @param rxx Pointer to external rxx buffer
     /// @param size legth of vector rxx
-    /// @param ts time step
-    void NRXX(complex<datat>* soc ,datat* rxx ,datat size ,datat ts) {
+    void NRXX(complex<datat>* soc ,datat* rxx ,datat size) {
         //int s_soc = (t / ts) + 1;
 
         for (int t_i = 0; t_i < size + 1; t_i++)
