@@ -33,7 +33,7 @@ class SoC{
     /// @param N Size of parameters arrays
     /// @param freq_t frequency maximum
     /// @param sig_t standard deviarion
-    SoC(short N_t, datat freq_t, datat sig_t):N(N_t), freq_max(freq_t), sig(sig_t)
+    SoC(short N_t, datat freq_t, datat sig_t):freq_max(freq_t), sig(sig_t),mean(0),N(N_t)
     {
         mod  = new datat[N];                            // Initialize route amplitude array
         freq = new datat[N];                            // Initialize doppler frequency array
@@ -46,7 +46,7 @@ class SoC{
         }
     }
 
-    SoC(short N_t, datat freq_t, datat sig_t, datat mean_t):N(N_t), freq_max(freq_t), sig(sig_t), mean(mean_t)
+    SoC(short N_t, datat freq_t, datat sig_t, datat mean_t):freq_max(freq_t), sig(sig_t),mean(0),N(N_t)
     {
         mod  = new datat[N];                            // Initialize route amplitude array
         freq = new datat[N];                            // Initialize doppler frequency array
@@ -101,7 +101,7 @@ class SoC{
     /// ref. https://mathworld.wolfram.com/Autocorrelation.html
     /// @param soc Pointer to external soc buffer
     /// @param rxx Pointer to external rxx buffer
-    /// @param size legth of vector rxx
+    /// @param size Legth of vector rxx and soc
     void NRXX(complex<datat>* soc ,datat* rxx ,datat size) {
         //int s_soc = (t / ts) + 1;
 
@@ -113,6 +113,46 @@ class SoC{
                 rxx[t_i] += (soc[i-t_i] * conj(soc[i])).real();
             }
         }                    
+    }
+
+    /// @brief Compute Numeric Model Cross Correlation 
+    /// @param soc Pointer to external soc buffer
+    /// @param rxx Pointer to external rxx buffer
+    /// @param size Legth of vector rxx and soc
+    void CRXX (complex<datat>* soc, datat* rxx, int size) {
+        //int s_soc = (t / ts) + 1;
+
+        for (int t_i = 0; t_i < size + 1; t_i++)
+        {
+            rxx[t_i] = 0;
+            for (short i = t_i; i < size + 1 ; i++)
+            {
+                rxx[t_i] += (soc[i-t_i].real() * soc[i].imag())/(2 * size);
+            }
+        } 
+    }
+
+    /// @brief Compute statistical properties of SoC
+    /// @param soc Pointer to external soc buffer
+    datat Mean_SoC(complex<datat>* soc, int size, bool rc_p)
+    {
+        auto mu = 0;
+        for (int i = 0; i < size + 1; i++){
+            mu += (rc_p) ? soc[i].real():soc[i].imag();
+        }
+
+
+        return mu/(float)size;
+    }
+
+    datat PSD_SoC(complex<datat>* soc, int size)
+    {
+        datat mu = 0;
+        for (int i = 0; i < size + 1; i++){
+            mu += abs(soc[i]);
+        }
+
+        return mu/size;
     }
     
     /// @brief Compute Sum of Cisoids model taking an empty pointer and returning it filled
@@ -133,8 +173,7 @@ class SoC{
             }
         }
     }
-    
-    
+
     /// @brief Compute Vision Line Component
     /// @param vlc Pointer to external Line of Sight buffer
     /// @param size legth of vector vlc

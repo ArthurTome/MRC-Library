@@ -12,9 +12,12 @@
 #include <QtWidgets/QGraphicsGridLayout>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QGroupBox>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QLabel>
 #include <QtCharts/QLineSeries>
 
-QT_CHARTS_USE_NAMESPACE
+
+using namespace Qt;
 
 class mrc_gui : public QWidget
 {
@@ -36,6 +39,8 @@ private:
     QList<QLineSeries *> m_seriesIRxx;
 
     QGridLayout *m_mainLayout;
+    QGridLayout *m_ChartLayoutSoC;
+    QGridLayout *m_ChartLayoutRXX;
     QGridLayout *m_buttonLayout;
 
     QSpinBox *m_N;
@@ -43,11 +48,22 @@ private:
     QDoubleSpinBox *m_ts;
     QDoubleSpinBox *m_freq;
     QDoubleSpinBox *m_sig;
-    QDoubleSpinBox *m_mean;
+    QLineEdit *m_mean_real;
+    QLineEdit *m_mean_imag;
 
     QRadioButton *radio1;
     QRadioButton *radio2;
 
+    QLabel *label_N;
+    QLabel *label_Samples;
+    QLabel *label_TimeStamp;
+    QLabel *label_Freq;
+    QLabel *label_Variance;
+    QLabel *label_Real;
+    QLabel *label_Imag;
+
+    QLabel *label_Chart_SoC;
+    QLabel *label_Chart_RXX;
 };
 
 #endif // MRC_GUI_H
