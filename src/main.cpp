@@ -8,6 +8,8 @@
 #include <array>
 #include "MRC.hpp"
 
+#define sz 5000
+
 using namespace std;
 
 
@@ -19,24 +21,25 @@ int main(int argc, char *argv[]){
 
     // |============================================================|
     // External vector of exernal aplications
-    array<complex<float>, 100> soc = {};
-    array<float, 100> rxx = {};
-    array<float, 100> psd = {};
+    array<complex<float>, sz> soc = {};
+    array<float, sz> rxx = {};
+    array<float, sz> psd = {};
 
     // |============================================================|
 
     //START FUNCTION
     SoC <float> floatSoC(N, freq, sig);                         // Initialize class <float> with frequency 91 and standard deviation 1
     floatSoC.Comp_EMEDS();                                      // Compute parameter 
-    floatSoC.Comp_SoC(soc.begin(), 100, 0.001);                 // Compute Sum os Cisoids
+    floatSoC.Comp_SoC(soc.begin(), sz, 0.001);                 // Compute Sum os Cisoids
+    floatSoC.CRXX(soc.begin(), rxx.begin(), sz);
     //floatSoC.IRXX(rxx.begin(), 100, 0.1);
     //floatSoC.CRXX(soc.begin(), rxx.begin(), 100);               // Compute cross correlation
     //floatSoC.PSD_SoC(soc.begin(), rxx.begin(), 100);
     //cout << floatSoC.Mean_SoC(soc.begin(), 100, true) << "\n";
-    //for (auto var = rxx.begin(); var != rxx.end(); var++) cout << *var << " ";
-    cout << floatSoC.PSD_SoC(soc.begin(), 100);
+    for (auto var = rxx.begin(); var != rxx.end(); var++) cout << *var << " ";
+    cout << '\n';
+    cout << "var soc: " << floatSoC.Var_SoC(soc.begin(), sz, true) << '\n';
 }
-
 
 /*
 int main(int argc, char *argv[])

@@ -110,24 +110,28 @@ class SoC{
             rxx[t_i] = 0;
             for (short i = t_i; i < size + 1 ; i++)
             {
-                rxx[t_i] += (soc[i-t_i] * conj(soc[i])).real();
+                rxx[t_i] += (soc[i-t_i] * conj(soc[i])).real() / (2 * size);
             }
         }                    
     }
 
-    /// @brief Compute Numeric Model Cross Correlation 
+    /// @brief Compute Numeric Model Cross Correlation
+    /// ref. https://mathworld.wolfram.com/Autocorrelation.html
     /// @param soc Pointer to external soc buffer
     /// @param rxx Pointer to external rxx buffer
     /// @param size Legth of vector rxx and soc
     void CRXX (complex<datat>* soc, datat* rxx, int size) {
         //int s_soc = (t / ts) + 1;
 
+        auto real = Var_SoC(soc, size, true);
+        auto imag = Var_SoC(soc, size, false);
+
         for (int t_i = 0; t_i < size + 1; t_i++)
         {
             rxx[t_i] = 0;
             for (short i = t_i; i < size + 1 ; i++)
             {
-                rxx[t_i] += (soc[i-t_i].real() * soc[i].imag())/(2 * size);
+                rxx[t_i] += (soc[i-t_i].real() * soc[i].imag()) / (2 * size);
             }
         } 
     }
@@ -145,6 +149,19 @@ class SoC{
         return mu/(float)size;
     }
 
+
+    datat Var_SoC(complex<datat>* soc, int size, bool rc_p)
+    {
+        datat mu_t = Mean_SoC(soc, size, rc_p);
+        auto var = 0;
+        for (int i = 0; i < size + 1; i++){
+            var += (rc_p) ? pow(soc[i].real() - mu_t, 2) :pow(soc[i].imag() - mu_t, 2);
+        }
+
+        return var/(float)size;
+    }
+
+
     datat PSD_SoC(complex<datat>* soc, int size)
     {
         datat mu = 0;
@@ -152,7 +169,7 @@ class SoC{
             mu += abs(soc[i]);
         }
 
-        return mu/size;
+        return mu;
     }
     
     /// @brief Compute Sum of Cisoids model taking an empty pointer and returning it filled
