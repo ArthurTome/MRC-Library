@@ -37,6 +37,7 @@ private:
     QList<QLineSeries *> m_seriesSoC;
     QList<QLineSeries *> m_seriesRxx;
     QList<QLineSeries *> m_seriesIRxx;
+    QList<QLineSeries *> m_seriesCRxx;
 
     QGridLayout *m_mainLayout;
     QGridLayout *m_ChartLayoutSoC;

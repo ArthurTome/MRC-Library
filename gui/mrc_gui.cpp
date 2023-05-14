@@ -10,7 +10,6 @@
 
 #include <QtCharts/QLegend>
 
-
 #include <QtCharts/QLineSeries>
 
 using namespace Qt;
@@ -25,7 +24,6 @@ mrc_gui::mrc_gui(QWidget *parent) :
     QPushButton *refreshValues = new QPushButton("Refresh Values");
     radio1 = new QRadioButton(tr("EMEDS"));
     radio2 = new QRadioButton(tr("GMEA"));
-    radio1->setChecked(true);
 
     // LAYOUT OBJECTS
     m_N = new QSpinBox();
@@ -36,7 +34,7 @@ mrc_gui::mrc_gui(QWidget *parent) :
     m_mean_real = new QLineEdit();
     m_mean_imag = new QLineEdit();
 
-    // LABELS
+    // LABELS OBJECTS
     label_N = new QLabel();
     label_Samples = new QLabel();
     label_TimeStamp = new QLabel();
@@ -60,7 +58,9 @@ mrc_gui::mrc_gui(QWidget *parent) :
     m_ts->setValue(0.0001);
     m_N->setValue(21);
     m_sig->setValue(1);
+    radio1->setChecked(true);
 
+    // LABELS NAMES
     label_N->setText("N. Cisoids");
     label_Samples->setText("Samples");
     label_TimeStamp->setText("TimeStamp");
@@ -125,6 +125,8 @@ void mrc_gui::refreshValues()
     if (!m_seriesSoC.isEmpty()) m_seriesSoC.clear();
     if (!m_seriesRxx.isEmpty()) m_seriesRxx.clear();
 
+    if (!m_seriesIRxx.isEmpty()) m_seriesIRxx.clear();
+
     m_chart1->removeAllSeries();
     m_chart2->removeAllSeries();
 
@@ -140,6 +142,7 @@ void mrc_gui::refreshValues()
     complex<float>* soc = new complex<float>[samples];
     float* rxx = new float[samples];
     float* irxx = new float[samples];
+    float* crxx = new float[samples];
     float mu_r = 0;
     float mu_i = 0;
 
@@ -149,22 +152,26 @@ void mrc_gui::refreshValues()
     if (radio2->isChecked()) floatSoC.Comp_GMEA();
     floatSoC.Comp_SoC(&soc[0], samples, t_s);                                   // Calculate SoC
     floatSoC.NRXX(&soc[0], &rxx[0], samples);                                   // Calculate numeric correlation
+    floatSoC.CRXX(&soc[0], &crxx[0], samples);
     floatSoC.IRXX(&irxx[0], samples, t_s);                                      // Calculate ideal correlation
     mu_r = floatSoC.Mean_SoC(&soc[0], samples, true);
     mu_i = floatSoC.Mean_SoC(&soc[0], samples, false);
 
     // CREATE POINT VECTOR SOC
-    QList<QPointF> dataSoC;
-    for (int i = 0; i < samples; i++) dataSoC.append(QPointF(i * t_s, soc[i].real()));
+    QList<QPointF> dataSoC_r;
+    QList<QPointF> dataSoC_i;
+    for (int i = 0; i < samples; i++) dataSoC_r.append(QPointF(i * t_s, soc[i].real()));
+    for (int i = 0; i < samples; i++) dataSoC_i.append(QPointF(i * t_s, soc[i].imag()));
 
     // CREATE POINT VECTOR SOC
     QList<QPointF> dataRxx;
+    QList<QPointF> dataCRxx;
     QList<QPointF> dataIRxx;
     for (int i = 0; i < samples; i++)
     {
-        dataRxx.append(QPointF(i * t_s, rxx[i] * t_s));
+        dataRxx.append(QPointF(i * t_s, rxx[i]));
+        dataCRxx.append(QPointF(i * t_s, crxx[i]));
         dataIRxx.append(QPointF(i * t_s, irxx[i]));
-
     }
 
     // WRITE STATS VALUES ON GUI
@@ -172,36 +179,75 @@ void mrc_gui::refreshValues()
     m_mean_imag->setText(QString::number(mu_i, 'f', 7));
 
     // CREATE LINE SOC
-    QLineSeries *seriesSoC = new QLineSeries();
-    m_seriesSoC.append(seriesSoC);
+    QLineSeries *seriesSoC_r = new QLineSeries();
+    m_seriesSoC.append(seriesSoC_r);
 
-    // CREATE LINE RXX
-    QPen pen(QRgb(0xfdb157));
-    pen.setWidth(5);
+    QLineSeries *seriesSoC_i = new QLineSeries();
+    m_seriesSoC.append(seriesSoC_i);
 
     QLineSeries *seriesRxx = new QLineSeries();
     m_seriesRxx.append(seriesRxx);
 
+    QLineSeries *seriesCRxx = new QLineSeries();
+    m_seriesCRxx.append(seriesCRxx);
+
     QLineSeries *seriesIRxx = new QLineSeries();
     m_seriesIRxx.append(seriesIRxx);
 
+    // LINE ADJUSTMENTS FOR SOC
+    QPen penSoC_r = seriesSoC_r->pen();
+    QPen penSoC_i = seriesSoC_i->pen();
+
+    penSoC_r.setWidth(1);
+    penSoC_r.setBrush(QBrush("red"));
+
+    penSoC_i.setWidth(1);
+    penSoC_i.setBrush(QBrush("blue"));
+
+    seriesSoC_r->setPen(penSoC_r);
+    seriesSoC_i->setPen(penSoC_i);
+
+    // LINE ADJUSTMENTS FOR RXX
+    QPen penRxx = seriesRxx->pen();
+    QPen penCRxx = seriesCRxx->pen();
+    QPen penIRxx = seriesIRxx->pen();
+
+    penRxx.setWidth(1);
+    penRxx.setBrush(QBrush("orange"));
+
+    penCRxx.setWidth(1);
+    penCRxx.setBrush(QBrush("blue"));
+
+    penIRxx.setWidth(1);
+    penIRxx.setBrush(QBrush("red"));
+
+    seriesRxx->setPen(penRxx);
+    seriesCRxx->setPen(penCRxx);
+    seriesIRxx->setPen(penIRxx);
+
     // RENDER CHART WITH VALUES SOC
-    seriesSoC->append(dataSoC);
-    m_chart1->addSeries(seriesSoC);
-    m_chart1->legend()->setVisible(false);
+    seriesSoC_r->append(dataSoC_r);
+    seriesSoC_i->append(dataSoC_i);
+    m_chart1->addSeries(seriesSoC_r);
+    m_chart1->addSeries(seriesSoC_i);
+
+    m_chart1->legend()->setVisible(true);
     m_chart1->createDefaultAxes();
 
     // RENDER CHART WITH VALUES RXX
     seriesRxx->append(dataRxx);
+    seriesCRxx->append(dataCRxx);
     seriesIRxx->append(dataIRxx);
     m_chart2->addSeries(seriesRxx);
+    m_chart2->addSeries(seriesCRxx);
     m_chart2->addSeries(seriesIRxx);
-    m_chart2->legend()->setVisible(false);
+    m_chart2->legend()->setVisible(true);
     m_chart2->createDefaultAxes();
     m_chartSoC->setRenderHint(QPainter::Antialiasing);
     m_chartRxx->setRenderHint(QPainter::Antialiasing);
 
     delete[] soc;
     delete[] rxx;
+    delete[] crxx;
     delete[] irxx;
 }

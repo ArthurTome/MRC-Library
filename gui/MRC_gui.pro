@@ -22,5 +22,4 @@ HEADERS  += mrc_gui.h\
 
 #FORMS    += mrc_gui.ui
 
-RESOURCES += \
-    textfinder.qrc
+RESOURCES +=
