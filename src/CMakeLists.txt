@@ -1,13 +1,11 @@
-﻿# CMakeList.txt: projeto de CMake para CMakeProject1, incluir origem e definir
-# lógica específica a um projeto aqui.
-#
-cmake_minimum_required (VERSION 3.8)
+﻿#cmake_minimum_required (VERSION 3.12)
 
-# Adicione a origem ao executável deste projeto.
-add_executable (MRC-Library "main.cpp" "MRC.cpp" "MRC.hpp")
+# List source files to executable
+add_executable (${PROJECT_NAME} "main.cpp" 
+                                "MRC.cpp" 
+                                "MRC.hpp")
 
+# Ser CPP version
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET MRC-Library PROPERTY CXX_STANDARD 20)
+  set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 endif()
-
-# TODO: Adicione testes e instale destinos, se necessário.
