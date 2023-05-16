@@ -31,12 +31,12 @@ int main(int argc, char *argv[]){
     SoC <float> floatSoC(N, freq, sig);                         // Initialize class <float> with frequency 91 and standard deviation 1
     floatSoC.Comp_EMEDS();                                      // Compute parameter 
     floatSoC.Comp_SoC(soc.begin(), sz, 0.001);                 // Compute Sum os Cisoids
-    floatSoC.NRXX(soc.begin(), rxx.begin(), sz);
+    floatSoC.CRXX(soc.begin(), rxx.begin(), sz);
     //floatSoC.IRXX(rxx.begin(), 100, 0.1);
     //floatSoC.CRXX(soc.begin(), rxx.begin(), 100);               // Compute cross correlation
     //floatSoC.PSD_SoC(soc.begin(), rxx.begin(), 100);
     //cout << floatSoC.Mean_SoC(soc.begin(), 100, true) << "\n";
-    for (auto var = rxx.begin(); var != rxx.end(); var++) cout << *var << ",";
+    for (auto var = rxx.begin(); var != rxx.end(); var++) cout << *var << " ";
     cout << '\n';
     cout << "var soc: " << floatSoC.Var_SoC(soc.begin(), sz, true) << '\n';
 }
