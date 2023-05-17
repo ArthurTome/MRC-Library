@@ -1,7 +1,6 @@
 #include "mrc_gui.h"
 #include "../src/MRC.hpp"
 
-
 #include <QtWidgets>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
@@ -12,15 +11,47 @@
 
 #include <QtCharts/QLineSeries>
 
+#include <QSpacerItem>
+
 using namespace Qt;
+
+SoCTab::SoCTab(QWidget *parent): QWidget(parent)
+{
+    // Create chart view with the chart
+    m_chart1 = new QChart();
+    m_chartSoC = new QChartView(m_chart1, this);
+
+    m_ChartLayoutSoC = new QGridLayout();
+
+    //QVBoxLayout *TabLayout = new QVBoxLayout;
+    m_ChartLayoutSoC->addWidget(m_chartSoC);
+    setLayout(m_ChartLayoutSoC);
+
+}
+
+RxxTab::RxxTab(QWidget *parent): QWidget(parent)
+{
+    m_chart2 = new QChart();
+    m_chartRxx = new QChartView(m_chart2, this);
+
+    m_ChartLayoutRXX = new QGridLayout();
+
+    //QVBoxLayout *TabLayout = new QVBoxLayout;
+    m_ChartLayoutRXX->addWidget(m_chartRxx);
+    setLayout(m_ChartLayoutRXX);
+
+}
 
 mrc_gui::mrc_gui(QWidget *parent) :
     QWidget(parent)
 {
+    // tab layouyt
+    tabWidget = new QTabWidget;
+    tabWidget -> addTab(&A, tr("Channel"));
+    tabWidget -> addTab(&B, tr("Correlate"));
+
     // Create buttons for ui
-    m_buttonLayout = new QGridLayout();
-    m_ChartLayoutSoC = new QGridLayout();
-    m_ChartLayoutRXX = new QGridLayout();
+    m_formLayout = new QFormLayout();
     QPushButton *refreshValues = new QPushButton("Refresh Values");
     radio1 = new QRadioButton(tr("EMEDS"));
     radio2 = new QRadioButton(tr("GMEA"));
@@ -48,17 +79,23 @@ mrc_gui::mrc_gui(QWidget *parent) :
     // PRESETS AND CONFIGURES
     m_mean_real->setReadOnly(true);
     m_mean_imag->setReadOnly(true);
-    m_mean_real->setFixedWidth(100);
-    m_mean_imag->setFixedWidth(100);
+    m_mean_real->setFixedWidth(120);
+    m_mean_imag->setFixedWidth(120);
     m_Samples->setRange(0,50000);
     m_Samples->setValue(5000);
+    m_Samples->setFixedWidth(120);
     m_freq->setRange(0, 200);
     m_freq->setValue(91);
+    m_freq->setFixedWidth(120);
     m_ts->setDecimals(4);
     m_ts->setValue(0.0001);
+    m_ts->setFixedWidth(120);
     m_N->setValue(21);
+    m_N->setFixedWidth(120);
     m_sig->setValue(1);
+    m_sig->setFixedWidth(120);
     radio1->setChecked(true);
+    refreshValues->setFixedWidth(120);
 
     // LABELS NAMES
     label_N->setText("N. Cisoids");
@@ -73,23 +110,23 @@ mrc_gui::mrc_gui(QWidget *parent) :
 
     // CONFIGURE LAYOUT INPUT
     connect(refreshValues, SIGNAL(clicked()), this, SLOT(refreshValues()));
-    m_buttonLayout->addWidget(radio1);
-    m_buttonLayout->addWidget(radio2);
-    m_buttonLayout->addWidget(label_N);
-    m_buttonLayout->addWidget(m_N);
-    m_buttonLayout->addWidget(label_Samples);
-    m_buttonLayout->addWidget(m_Samples);
-    m_buttonLayout->addWidget(label_TimeStamp);
-    m_buttonLayout->addWidget(m_ts);
-    m_buttonLayout->addWidget(label_Freq);
-    m_buttonLayout->addWidget(m_freq);
-    m_buttonLayout->addWidget(label_Variance);
-    m_buttonLayout->addWidget(m_sig);
-    m_buttonLayout->addWidget(label_Real);
-    m_buttonLayout->addWidget(m_mean_real);
-    m_buttonLayout->addWidget(label_Imag);
-    m_buttonLayout->addWidget(m_mean_imag);
-    m_buttonLayout->addWidget(refreshValues);
+    m_formLayout->addWidget(radio1);
+    m_formLayout->addWidget(radio2);
+    m_formLayout->addWidget(label_N);
+    m_formLayout->addWidget(m_N);
+    m_formLayout->addWidget(label_Samples);
+    m_formLayout->addWidget(m_Samples);
+    m_formLayout->addWidget(label_TimeStamp);
+    m_formLayout->addWidget(m_ts);
+    m_formLayout->addWidget(label_Freq);
+    m_formLayout->addWidget(m_freq);
+    m_formLayout->addWidget(label_Variance);
+    m_formLayout->addWidget(m_sig);
+    m_formLayout->addWidget(label_Real);
+    m_formLayout->addWidget(m_mean_real);
+    m_formLayout->addWidget(label_Imag);
+    m_formLayout->addWidget(m_mean_imag);
+    m_formLayout->addWidget(refreshValues);
 
     // CONFIGURE LAYOUT CHART SOC
     //m_ChartLayoutSoC->addWidget(label_Chart_SoC, 0, 0);
@@ -99,19 +136,17 @@ mrc_gui::mrc_gui(QWidget *parent) :
     //m_ChartLayoutRXX->addWidget(label_Chart_RXX, 0, 0);
     //m_ChartLayoutRXX->addWidget(m_chartRxx, 1, 0);
 
-    // Create chart view with the chart
-    m_chart1 = new QChart();
-    m_chart2 = new QChart();
-    m_chartSoC = new QChartView(m_chart1, this);
-    m_chartRxx = new QChartView(m_chart2, this);
-
     // Create layout for grid and detached legend
     m_mainLayout = new QGridLayout();
-    m_mainLayout->addLayout(m_buttonLayout, 0, 0, 2, 1);
+    m_mainLayout->setColumnMinimumWidth(0, 120);
+    //m_mainLayout->setColumnStretch(0, 0);
+    m_mainLayout->setColumnStretch(1, 10);
+    m_mainLayout->addLayout(m_formLayout, 0, 0);
     //m_mainLayout->addLayout(m_ChartLayoutSoC, 0, 1, 1, 1);
     //m_mainLayout->addLayout(m_ChartLayoutRXX, 1, 1, 1, 1);
-    m_mainLayout->addWidget(m_chartSoC, 0, 1, 1, 1);
-    m_mainLayout->addWidget(m_chartRxx, 1, 1, 1, 1);
+    m_mainLayout->addWidget(tabWidget, 0, 1);
+    //m_mainLayout->addWidget(m_chartSoC, 0, 1, 1, 1);
+    //m_mainLayout->addWidget(m_chartRxx, 1, 1, 1, 1);
     setLayout(m_mainLayout);
 }
 
@@ -126,9 +161,6 @@ void mrc_gui::refreshValues()
     if (!m_seriesRxx.isEmpty()) m_seriesRxx.clear();
 
     if (!m_seriesIRxx.isEmpty()) m_seriesIRxx.clear();
-
-    m_chart1->removeAllSeries();
-    m_chart2->removeAllSeries();
 
     // TIME SET
     float t_s = m_ts->value();
@@ -194,6 +226,14 @@ void mrc_gui::refreshValues()
     QLineSeries *seriesIRxx = new QLineSeries();
     m_seriesIRxx.append(seriesIRxx);
 
+    // LABELS
+    seriesSoC_r->setName("Real");
+    seriesSoC_i->setName("Imag");
+
+    seriesRxx->setName("AutoCorr");
+    seriesCRxx->setName("CrossCorr");
+    seriesIRxx->setName("JakesCorr");
+
     // LINE ADJUSTMENTS FOR SOC
     QPen penSoC_r = seriesSoC_r->pen();
     QPen penSoC_i = seriesSoC_i->pen();
@@ -225,26 +265,30 @@ void mrc_gui::refreshValues()
     seriesCRxx->setPen(penCRxx);
     seriesIRxx->setPen(penIRxx);
 
+    // Reset series values
+    A.m_chart1->removeAllSeries();
+    B.m_chart2->removeAllSeries();
+
     // RENDER CHART WITH VALUES SOC
     seriesSoC_r->append(dataSoC_r);
     seriesSoC_i->append(dataSoC_i);
-    m_chart1->addSeries(seriesSoC_r);
-    m_chart1->addSeries(seriesSoC_i);
+    A.m_chart1->addSeries(seriesSoC_r);
+    A.m_chart1->addSeries(seriesSoC_i);
 
-    m_chart1->legend()->setVisible(true);
-    m_chart1->createDefaultAxes();
+    A.m_chart1->legend()->setVisible(true);
+    A.m_chart1->createDefaultAxes();
 
     // RENDER CHART WITH VALUES RXX
     seriesRxx->append(dataRxx);
     seriesCRxx->append(dataCRxx);
     seriesIRxx->append(dataIRxx);
-    m_chart2->addSeries(seriesRxx);
-    m_chart2->addSeries(seriesCRxx);
-    m_chart2->addSeries(seriesIRxx);
-    m_chart2->legend()->setVisible(true);
-    m_chart2->createDefaultAxes();
-    m_chartSoC->setRenderHint(QPainter::Antialiasing);
-    m_chartRxx->setRenderHint(QPainter::Antialiasing);
+    B.m_chart2->addSeries(seriesRxx);
+    B.m_chart2->addSeries(seriesCRxx);
+    B.m_chart2->addSeries(seriesIRxx);
+    B.m_chart2->legend()->setVisible(true);
+    B.m_chart2->createDefaultAxes();
+    A.m_chartSoC->setRenderHint(QPainter::Antialiasing);
+    B.m_chartRxx->setRenderHint(QPainter::Antialiasing);
 
     delete[] soc;
     delete[] rxx;

@@ -15,9 +15,35 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QLabel>
 #include <QtCharts/QLineSeries>
+#include <QSpacerItem>
 
 
 using namespace Qt;
+
+class SoCTab : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit SoCTab(QWidget *parent = nullptr);
+
+    QChart *m_chart1;
+    QChartView *m_chartSoC;
+    QGridLayout *m_ChartLayoutSoC;
+};
+
+class RxxTab : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit RxxTab(QWidget *parent = nullptr);
+
+    QChart *m_chart2;
+    QChartView *m_chartRxx;
+    QGridLayout *m_ChartLayoutRXX;
+
+};
 
 class mrc_gui : public QWidget
 {
@@ -30,19 +56,18 @@ public Q_SLOTS:
     void refreshValues();
 
 private:
-    QChart *m_chart1;
-    QChart *m_chart2;
-    QChartView *m_chartSoC;
-    QChartView *m_chartRxx;
+    QTabWidget *tabWidget;
+    // Tab
+    SoCTab A;
+    RxxTab B;
+
     QList<QLineSeries *> m_seriesSoC;
     QList<QLineSeries *> m_seriesRxx;
     QList<QLineSeries *> m_seriesIRxx;
     QList<QLineSeries *> m_seriesCRxx;
 
     QGridLayout *m_mainLayout;
-    QGridLayout *m_ChartLayoutSoC;
-    QGridLayout *m_ChartLayoutRXX;
-    QGridLayout *m_buttonLayout;
+    QFormLayout *m_formLayout;
 
     QSpinBox *m_N;
     QSpinBox *m_Samples;
