@@ -6,10 +6,9 @@
 #include <QtCharts/QChartView>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
-
 #include <QtCharts/QLegend>
-
 #include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
 
 #include <QSpacerItem>
 
@@ -18,8 +17,8 @@ using namespace Qt;
 SoCTab::SoCTab(QWidget *parent): QWidget(parent)
 {
     // Create chart view with the chart
-    m_chart1 = new QChart();
-    m_chartSoC = new QChartView(m_chart1, this);
+    m_chart = new QChart();
+    m_chartSoC = new QChartView(m_chart, this);
 
     m_ChartLayoutSoC = new QGridLayout();
 
@@ -27,18 +26,71 @@ SoCTab::SoCTab(QWidget *parent): QWidget(parent)
     m_ChartLayoutSoC->addWidget(m_chartSoC);
     setLayout(m_ChartLayoutSoC);
 
+    // RENDER LABEL AXIS
+    axisX = new QValueAxis;
+    axisX->setLabelFormat("%g");
+    axisX->setTitleText("t(ms)");
+
+    axisY = new QValueAxis;
+    axisY->setTitleText("Sinal level");
+    axisY->setTickType(QValueAxis::TicksDynamic);
+    axisY->setTickAnchor(5);
+    axisY->setTickInterval(1);
+
+    m_chart->addAxis(axisX, Qt::AlignBottom);
+    m_chart->addAxis(axisY, Qt::AlignLeft);
+
 }
 
 RxxTab::RxxTab(QWidget *parent): QWidget(parent)
 {
-    m_chart2 = new QChart();
-    m_chartRxx = new QChartView(m_chart2, this);
+    m_chart = new QChart();
+    m_chartRxx = new QChartView(m_chart, this);
 
     m_ChartLayoutRXX = new QGridLayout();
 
     //QVBoxLayout *TabLayout = new QVBoxLayout;
     m_ChartLayoutRXX->addWidget(m_chartRxx);
     setLayout(m_ChartLayoutRXX);
+
+    // RENDER LABEL AXIS
+    axisX = new QValueAxis;
+    axisX->setLabelFormat("%g");
+    axisX->setTitleText("tal(ms)");
+
+    axisY = new QValueAxis;
+    axisY->setTitleText("Correlation");
+    axisY->setTickType(QValueAxis::TicksDynamic);
+    axisY->setTickAnchor(-0.5);
+    axisY->setTickInterval(0.25);
+
+    m_chart->addAxis(axisX, Qt::AlignBottom);
+    m_chart->addAxis(axisY, Qt::AlignLeft);
+
+}
+
+PSDTab::PSDTab(QWidget *parent): QWidget(parent)
+{
+    // Create chart view with the chart
+    m_chart = new QChart();
+    m_chartPSD = new QChartView(m_chart, this);
+
+    m_ChartLayoutPSD = new QGridLayout();
+
+    //QVBoxLayout *TabLayout = new QVBoxLayout;
+    m_ChartLayoutPSD->addWidget(m_chartPSD);
+    setLayout(m_ChartLayoutPSD);
+
+    // RENDER LABEL AXIS
+    axisX = new QValueAxis;
+    axisX->setLabelFormat("%g");
+    axisX->setTitleText("w");
+
+    axisY = new QValueAxis;
+    axisY->setTitleText("Power");
+
+    m_chart->addAxis(axisX, Qt::AlignBottom);
+    m_chart->addAxis(axisY, Qt::AlignLeft);
 
 }
 
@@ -49,6 +101,7 @@ mrc_gui::mrc_gui(QWidget *parent) :
     tabWidget = new QTabWidget;
     tabWidget -> addTab(&A, tr("Channel"));
     tabWidget -> addTab(&B, tr("Correlate"));
+    tabWidget -> addTab(&C, tr("PSD"));
 
     // Create buttons for ui
     m_formLayout = new QFormLayout();
@@ -147,7 +200,7 @@ mrc_gui::mrc_gui(QWidget *parent) :
     m_mainLayout->addWidget(tabWidget, 0, 1);
     //m_mainLayout->addWidget(m_chartSoC, 0, 1, 1, 1);
     //m_mainLayout->addWidget(m_chartRxx, 1, 1, 1, 1);
-    setLayout(m_mainLayout);
+    setLayout(m_mainLayout); 
 }
 
 mrc_gui::~mrc_gui()
@@ -159,8 +212,8 @@ void mrc_gui::refreshValues()
 {
     if (!m_seriesSoC.isEmpty()) m_seriesSoC.clear();
     if (!m_seriesRxx.isEmpty()) m_seriesRxx.clear();
-
     if (!m_seriesIRxx.isEmpty()) m_seriesIRxx.clear();
+    if (!m_seriesCRxx.isEmpty()) m_seriesCRxx.clear();
 
     // TIME SET
     float t_s = m_ts->value();
@@ -253,42 +306,58 @@ void mrc_gui::refreshValues()
     QPen penIRxx = seriesIRxx->pen();
 
     penRxx.setWidth(1);
-    penRxx.setBrush(QBrush("orange"));
-
+    penRxx.setBrush(QBrush("red"));
     penCRxx.setWidth(1);
     penCRxx.setBrush(QBrush("blue"));
-
     penIRxx.setWidth(1);
-    penIRxx.setBrush(QBrush("red"));
+    penIRxx.setBrush(QBrush("orange"));
 
     seriesRxx->setPen(penRxx);
     seriesCRxx->setPen(penCRxx);
     seriesIRxx->setPen(penIRxx);
 
     // Reset series values
-    A.m_chart1->removeAllSeries();
-    B.m_chart2->removeAllSeries();
+    A.m_chart->removeAllSeries();
+    B.m_chart->removeAllSeries();
 
     // RENDER CHART WITH VALUES SOC
     seriesSoC_r->append(dataSoC_r);
     seriesSoC_i->append(dataSoC_i);
-    A.m_chart1->addSeries(seriesSoC_r);
-    A.m_chart1->addSeries(seriesSoC_i);
+    A.m_chart->addSeries(seriesSoC_r);
+    A.m_chart->addSeries(seriesSoC_i);
+    A.m_chart->legend()->setVisible(true);
+    A.m_chart->setTitle("Sinal SoC");
+    A.m_chartSoC->setRenderHint(QPainter::Antialiasing);
 
-    A.m_chart1->legend()->setVisible(true);
-    A.m_chart1->createDefaultAxes();
+    seriesSoC_r->attachAxis(A.axisX);
+    seriesSoC_r->attachAxis(A.axisY);
+
+    A.axisX->setRange(0, samples*t_s);
+    A.axisY->setRange(-5, 5);
 
     // RENDER CHART WITH VALUES RXX
     seriesRxx->append(dataRxx);
     seriesCRxx->append(dataCRxx);
     seriesIRxx->append(dataIRxx);
-    B.m_chart2->addSeries(seriesRxx);
-    B.m_chart2->addSeries(seriesCRxx);
-    B.m_chart2->addSeries(seriesIRxx);
-    B.m_chart2->legend()->setVisible(true);
-    B.m_chart2->createDefaultAxes();
-    A.m_chartSoC->setRenderHint(QPainter::Antialiasing);
+    B.m_chart->addSeries(seriesRxx);
+    B.m_chart->addSeries(seriesCRxx);
+    B.m_chart->addSeries(seriesIRxx);
+    B.m_chart->legend()->setVisible(true);
     B.m_chartRxx->setRenderHint(QPainter::Antialiasing);
+
+    seriesRxx->attachAxis(B.axisX);
+    seriesRxx->attachAxis(B.axisY);
+
+    seriesCRxx->attachAxis(B.axisX);
+    seriesCRxx->attachAxis(B.axisY);
+
+    seriesIRxx->attachAxis(B.axisX);
+    seriesIRxx->attachAxis(B.axisY);
+
+    B.axisX->setRange(0, samples*t_s);
+    B.axisY->setRange(-0.5, 1);
+
+    B.m_chart->setTitle("Correlation SoC");
 
     delete[] soc;
     delete[] rxx;

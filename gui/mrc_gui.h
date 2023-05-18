@@ -16,6 +16,7 @@
 #include <QtWidgets/QLabel>
 #include <QtCharts/QLineSeries>
 #include <QSpacerItem>
+#include <QtCharts/QValueAxis>
 
 
 using namespace Qt;
@@ -27,9 +28,11 @@ class SoCTab : public QWidget
 public:
     explicit SoCTab(QWidget *parent = nullptr);
 
-    QChart *m_chart1;
+    QChart *m_chart;
     QChartView *m_chartSoC;
     QGridLayout *m_ChartLayoutSoC;
+    QValueAxis *axisX;
+    QValueAxis *axisY;
 };
 
 class RxxTab : public QWidget
@@ -39,9 +42,26 @@ class RxxTab : public QWidget
 public:
     explicit RxxTab(QWidget *parent = nullptr);
 
-    QChart *m_chart2;
+    QChart *m_chart;
     QChartView *m_chartRxx;
     QGridLayout *m_ChartLayoutRXX;
+    QValueAxis *axisX;
+    QValueAxis *axisY;
+
+};
+
+class PSDTab : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit PSDTab(QWidget *parent = nullptr);
+
+    QChart *m_chart;
+    QChartView *m_chartPSD;
+    QGridLayout *m_ChartLayoutPSD;
+    QValueAxis *axisX;
+    QValueAxis *axisY;
 
 };
 
@@ -60,6 +80,7 @@ private:
     // Tab
     SoCTab A;
     RxxTab B;
+    PSDTab C;
 
     QList<QLineSeries *> m_seriesSoC;
     QList<QLineSeries *> m_seriesRxx;

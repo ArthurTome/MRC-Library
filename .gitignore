@@ -42,3 +42,4 @@ bin/
 
 #vs files
 *.json
+*.user

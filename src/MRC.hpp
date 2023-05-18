@@ -123,9 +123,6 @@ class SoC{
     void CRXX (complex<datat>* soc, datat* rxx, int size) {
         //int s_soc = (t / ts) + 1;
 
-        auto real = Var_SoC(soc, size, true);
-        auto imag = Var_SoC(soc, size, false);
-
         for (int t_i = 0; t_i < size + 1; t_i++)
         {
             rxx[t_i] = 0;
