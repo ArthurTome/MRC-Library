@@ -13,6 +13,7 @@ TARGET = MRC_gui
 TEMPLATE = app
 CONFIG += c++20
 
+LIBS += "/usr/local/lib/libfftw3f.a"
 
 SOURCES += main.cpp\
         mrc_gui.cpp

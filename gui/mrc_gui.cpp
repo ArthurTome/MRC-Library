@@ -1,5 +1,7 @@
 #include "mrc_gui.h"
 #include "../src/MRC.hpp"
+#include <complex>
+#include <fftw3.h>
 
 #include <QtWidgets>
 #include <QtCharts/QChart>
@@ -28,8 +30,8 @@ SoCTab::SoCTab(QWidget *parent): QWidget(parent)
 
     // RENDER LABEL AXIS
     axisX = new QValueAxis;
-    axisX->setLabelFormat("%g");
-    axisX->setTitleText("t(ms)");
+    //axisX->setLabelFormat("%g");
+    axisX->setTitleText("t(s)");
 
     axisY = new QValueAxis;
     axisY->setTitleText("Sinal level");
@@ -55,8 +57,8 @@ RxxTab::RxxTab(QWidget *parent): QWidget(parent)
 
     // RENDER LABEL AXIS
     axisX = new QValueAxis;
-    axisX->setLabelFormat("%g");
-    axisX->setTitleText("tal(ms)");
+    //axisX->setLabelFormat("%g");
+    axisX->setTitleText("tal(s)");
 
     axisY = new QValueAxis;
     axisY->setTitleText("Correlation");
@@ -85,6 +87,7 @@ PSDTab::PSDTab(QWidget *parent): QWidget(parent)
     axisX = new QValueAxis;
     axisX->setLabelFormat("%g");
     axisX->setTitleText("w");
+
 
     axisY = new QValueAxis;
     axisY->setTitleText("Power");
@@ -214,14 +217,11 @@ void mrc_gui::refreshValues()
     if (!m_seriesRxx.isEmpty()) m_seriesRxx.clear();
     if (!m_seriesIRxx.isEmpty()) m_seriesIRxx.clear();
     if (!m_seriesCRxx.isEmpty()) m_seriesCRxx.clear();
+    if (!m_seriesPSD.isEmpty()) m_seriesPSD.clear();
 
     // TIME SET
     float t_s = m_ts->value();
     int samples = m_Samples->value();
-
-    // COMPUTE MRC LIBRARY
-    //array<complex<float>, samples> soc = {};
-    //array<float, samples> rxx = {};
 
     // COMPUTE MRC LIBRARY
     complex<float>* soc = new complex<float>[samples];
@@ -242,21 +242,35 @@ void mrc_gui::refreshValues()
     mu_r = floatSoC.Mean_SoC(&soc[0], samples, true);
     mu_i = floatSoC.Mean_SoC(&soc[0], samples, false);
 
-    // CREATE POINT VECTOR SOC
-    QList<QPointF> dataSoC_r;
-    QList<QPointF> dataSoC_i;
-    for (int i = 0; i < samples; i++) dataSoC_r.append(QPointF(i * t_s, soc[i].real()));
-    for (int i = 0; i < samples; i++) dataSoC_i.append(QPointF(i * t_s, soc[i].imag()));
+    // FFT
+    fftwf_complex *out = new fftwf_complex [samples]; /* Output */
+    //float *out = new float[samples];
+    fftwf_plan p; /* Plan */
 
-    // CREATE POINT VECTOR SOC
-    QList<QPointF> dataRxx;
-    QList<QPointF> dataCRxx;
-    QList<QPointF> dataIRxx;
-    for (int i = 0; i < samples; i++)
-    {
+    p = fftwf_plan_dft_r2c_1d(samples, &rxx[0], &out[0], FFTW_ESTIMATE);
+
+    fftwf_execute(p);
+
+    fftwf_destroy_plan(p);
+
+    // CREATE POINT VECTOR SOC AND RXX
+    QList<QPointF> dataSoC_r = {};
+    QList<QPointF> dataSoC_i = {};
+    QList<QPointF> dataRxx = {};
+    QList<QPointF> dataCRxx = {};
+    QList<QPointF> dataIRxx = {};
+    QList<QPointF> dataPSD = {};
+
+    for (int i = 0; i < samples; i++) {
+        dataSoC_r.append(QPointF(i * t_s, soc[i].real()));
+        dataSoC_i.append(QPointF(i * t_s, soc[i].imag()));
         dataRxx.append(QPointF(i * t_s, rxx[i]));
         dataCRxx.append(QPointF(i * t_s, crxx[i]));
         dataIRxx.append(QPointF(i * t_s, irxx[i]));
+    }
+
+    for (int i = 0; i < samples / 2 + 1; i++) {
+        dataPSD.append(QPointF(i, out[i][0]));
     }
 
     // WRITE STATS VALUES ON GUI
@@ -278,6 +292,9 @@ void mrc_gui::refreshValues()
 
     QLineSeries *seriesIRxx = new QLineSeries();
     m_seriesIRxx.append(seriesIRxx);
+
+    QLineSeries *seriesPSD = new QLineSeries();
+    m_seriesIRxx.append(seriesPSD);
 
     // LABELS
     seriesSoC_r->setName("Real");
@@ -319,6 +336,7 @@ void mrc_gui::refreshValues()
     // Reset series values
     A.m_chart->removeAllSeries();
     B.m_chart->removeAllSeries();
+    C.m_chart->removeAllSeries();
 
     // RENDER CHART WITH VALUES SOC
     seriesSoC_r->append(dataSoC_r);
@@ -331,6 +349,9 @@ void mrc_gui::refreshValues()
 
     seriesSoC_r->attachAxis(A.axisX);
     seriesSoC_r->attachAxis(A.axisY);
+
+    seriesSoC_i->attachAxis(A.axisX);
+    seriesSoC_i->attachAxis(A.axisY);
 
     A.axisX->setRange(0, samples*t_s);
     A.axisY->setRange(-5, 5);
@@ -359,8 +380,16 @@ void mrc_gui::refreshValues()
 
     B.m_chart->setTitle("Correlation SoC");
 
+    // RENDER PSD
+    seriesPSD->append(dataPSD);
+    C.m_chart->addSeries(seriesPSD);
+    C.m_chartPSD->setRenderHint(QPainter::Antialiasing);
+    seriesPSD->attachAxis(C.axisX);
+    seriesPSD->attachAxis(C.axisY);
+
     delete[] soc;
     delete[] rxx;
     delete[] crxx;
     delete[] irxx;
+    delete[] out;
 }

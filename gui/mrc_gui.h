@@ -86,6 +86,7 @@ private:
     QList<QLineSeries *> m_seriesRxx;
     QList<QLineSeries *> m_seriesIRxx;
     QList<QLineSeries *> m_seriesCRxx;
+    QList<QLineSeries *> m_seriesPSD;
 
     QGridLayout *m_mainLayout;
     QFormLayout *m_formLayout;
