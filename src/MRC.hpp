@@ -70,13 +70,13 @@ class SoC{
     /// @param rxx Pointer to external rxx buffer
     /// @param size legth of vector rxx
     /// @param ts time step
-    void IRXX(datat* rxx, datat size, datat ts)
+    void IRXX(complex<datat>* rxx, datat size, datat ts)
     {
         //int num = (t / ts) + 1;             // length for time, [0, t - ts]
         for (int t_i = 0; t_i < size + 1; t_i++)
         {
             //rxx[t_i] = 0;
-            rxx[t_i] = pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_max * t_i * ts);
+            rxx[t_i] = complex<datat>(pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_max * t_i * ts), 0);
         }
     }
 
@@ -84,15 +84,15 @@ class SoC{
     /// @param rxx Pointer to external irxx buffer
     /// @param size legth of vector rxx
     /// @param ts time step
-    void RXX(datat* rxx, datat size, datat ts) {
+    void RXX(complex<datat>* rxx, datat size, datat ts) {
         //int num = (t / ts) + 1;
         for (int t_i = 0; t_i < size + 1; t_i++)
         {
-            rxx[t_i] = 0;
+            rxx[t_i] = complex<datat>(0, 0);
             for (short i = 0; i < N; i++)                       //Compute 
             {
                 //C1*EXP(i*[2pi*F*t + Theta])
-                rxx[t_i] += cos(2 * M_PI * freq[i] * t_i * ts) * pow(mod[i],2)/2;
+                rxx[t_i] += complex<datat>(cos(2 * M_PI * freq[i] * t_i * ts) * pow(mod[i],2)/2, 0);
             }
         }
     }
@@ -102,15 +102,15 @@ class SoC{
     /// @param soc Pointer to external soc buffer
     /// @param rxx Pointer to external rxx buffer
     /// @param size Legth of vector rxx and soc
-    void NRXX(complex<datat>* soc ,datat* rxx ,datat size) {
+    void NRXX(complex<datat>* soc ,complex<datat>* rxx ,datat size) {
         //int s_soc = (t / ts) + 1;
 
         for (int t_i = 0; t_i < size + 1; t_i++)
         {
-            rxx[t_i] = 0;
+            rxx[t_i] = complex<datat>(0, 0);
             for (short i = t_i; i < size + 1 ; i++)
             {
-                rxx[t_i] += (soc[i-t_i] * conj(soc[i])).real() / (2 * size);
+                rxx[t_i] += complex<datat>((soc[i-t_i] * conj(soc[i])).real() / (2 * size), 0);
             }
         }                    
     }
@@ -120,15 +120,15 @@ class SoC{
     /// @param soc Pointer to external soc buffer
     /// @param rxx Pointer to external rxx buffer
     /// @param size Legth of vector rxx and soc
-    void CRXX (complex<datat>* soc, datat* rxx, int size) {
+    void CRXX (complex<datat>* soc, complex<datat>* rxx, int size) {
         //int s_soc = (t / ts) + 1;
 
         for (int t_i = 0; t_i < size + 1; t_i++)
         {
-            rxx[t_i] = 0;
+            rxx[t_i] = complex<datat>(0, 0);
             for (short i = t_i; i < size + 1 ; i++)
             {
-                rxx[t_i] += (soc[i-t_i].real() * soc[i].imag()) / (2 * size);
+                rxx[t_i] += complex<datat>((soc[i-t_i].real() * soc[i].imag()) / (2 * size), 0);
             }
         } 
     }

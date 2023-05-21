@@ -16,10 +16,16 @@ CONFIG += c++20
 LIBS += "/usr/local/lib/libfftw3f.a"
 
 SOURCES += main.cpp\
-        mrc_gui.cpp
+        mrc_gui.cpp \
+        psdtab.cpp \
+        rxxtab.cpp \
+        soctab.cpp
 
 HEADERS  += mrc_gui.h\
-            ../src/MRC.hpp
+            ../src/MRC.hpp \
+            psdtab.h \
+            rxxtab.h \
+            soctab.h
 
 #FORMS    += mrc_gui.ui
 

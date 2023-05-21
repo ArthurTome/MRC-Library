@@ -1,69 +1,21 @@
 #ifndef MRC_GUI_H
 #define MRC_GUI_H
 
-#include <QtWidgets>
+#include "soctab.h"
+#include "rxxtab.h"
+#include "psdtab.h"
 
-#include <QtCharts/QChartGlobal>
+#include <complex>
+
+#include <QtWidgets>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QGraphicsWidget>
-#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGraphicsGridLayout>
 #include <QtWidgets/QDoubleSpinBox>
-#include <QtWidgets/QGroupBox>
-#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QLabel>
 #include <QtCharts/QLineSeries>
-#include <QSpacerItem>
-#include <QtCharts/QValueAxis>
-
-
-using namespace Qt;
-
-class SoCTab : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit SoCTab(QWidget *parent = nullptr);
-
-    QChart *m_chart;
-    QChartView *m_chartSoC;
-    QGridLayout *m_ChartLayoutSoC;
-    QValueAxis *axisX;
-    QValueAxis *axisY;
-};
-
-class RxxTab : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit RxxTab(QWidget *parent = nullptr);
-
-    QChart *m_chart;
-    QChartView *m_chartRxx;
-    QGridLayout *m_ChartLayoutRXX;
-    QValueAxis *axisX;
-    QValueAxis *axisY;
-
-};
-
-class PSDTab : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit PSDTab(QWidget *parent = nullptr);
-
-    QChart *m_chart;
-    QChartView *m_chartPSD;
-    QGridLayout *m_ChartLayoutPSD;
-    QValueAxis *axisX;
-    QValueAxis *axisY;
-
-};
 
 class mrc_gui : public QWidget
 {
@@ -74,6 +26,7 @@ public:
 
 public Q_SLOTS:
     void refreshValues();
+    void fft_shift(complex<float>* A, int size);
 
 private:
     QTabWidget *tabWidget;

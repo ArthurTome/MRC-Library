@@ -5,6 +5,8 @@ add_executable (${PROJECT_NAME} "main.cpp"
                                 "MRC.cpp" 
                                 "MRC.hpp")
 
+target_link_libraries(${PROJECT_NAME} /usr/local/lib/libfftw3f.a)
+
 # Ser CPP version
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)

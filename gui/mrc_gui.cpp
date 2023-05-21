@@ -1,13 +1,10 @@
 #include "mrc_gui.h"
 #include "../src/MRC.hpp"
-#include <complex>
+
+#include <cmath>
 #include <fftw3.h>
 
-#include <QtWidgets>
-#include <QtCharts/QChart>
-#include <QtCharts/QChartView>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QLabel>
 #include <QtCharts/QLegend>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
@@ -15,87 +12,7 @@
 #include <QSpacerItem>
 
 using namespace Qt;
-
-SoCTab::SoCTab(QWidget *parent): QWidget(parent)
-{
-    // Create chart view with the chart
-    m_chart = new QChart();
-    m_chartSoC = new QChartView(m_chart, this);
-
-    m_ChartLayoutSoC = new QGridLayout();
-
-    //QVBoxLayout *TabLayout = new QVBoxLayout;
-    m_ChartLayoutSoC->addWidget(m_chartSoC);
-    setLayout(m_ChartLayoutSoC);
-
-    // RENDER LABEL AXIS
-    axisX = new QValueAxis;
-    //axisX->setLabelFormat("%g");
-    axisX->setTitleText("t(s)");
-
-    axisY = new QValueAxis;
-    axisY->setTitleText("Sinal level");
-    axisY->setTickType(QValueAxis::TicksDynamic);
-    axisY->setTickAnchor(5);
-    axisY->setTickInterval(1);
-
-    m_chart->addAxis(axisX, Qt::AlignBottom);
-    m_chart->addAxis(axisY, Qt::AlignLeft);
-
-}
-
-RxxTab::RxxTab(QWidget *parent): QWidget(parent)
-{
-    m_chart = new QChart();
-    m_chartRxx = new QChartView(m_chart, this);
-
-    m_ChartLayoutRXX = new QGridLayout();
-
-    //QVBoxLayout *TabLayout = new QVBoxLayout;
-    m_ChartLayoutRXX->addWidget(m_chartRxx);
-    setLayout(m_ChartLayoutRXX);
-
-    // RENDER LABEL AXIS
-    axisX = new QValueAxis;
-    //axisX->setLabelFormat("%g");
-    axisX->setTitleText("tal(s)");
-
-    axisY = new QValueAxis;
-    axisY->setTitleText("Correlation");
-    axisY->setTickType(QValueAxis::TicksDynamic);
-    axisY->setTickAnchor(-0.5);
-    axisY->setTickInterval(0.25);
-
-    m_chart->addAxis(axisX, Qt::AlignBottom);
-    m_chart->addAxis(axisY, Qt::AlignLeft);
-
-}
-
-PSDTab::PSDTab(QWidget *parent): QWidget(parent)
-{
-    // Create chart view with the chart
-    m_chart = new QChart();
-    m_chartPSD = new QChartView(m_chart, this);
-
-    m_ChartLayoutPSD = new QGridLayout();
-
-    //QVBoxLayout *TabLayout = new QVBoxLayout;
-    m_ChartLayoutPSD->addWidget(m_chartPSD);
-    setLayout(m_ChartLayoutPSD);
-
-    // RENDER LABEL AXIS
-    axisX = new QValueAxis;
-    axisX->setLabelFormat("%g");
-    axisX->setTitleText("w");
-
-
-    axisY = new QValueAxis;
-    axisY->setTitleText("Power");
-
-    m_chart->addAxis(axisX, Qt::AlignBottom);
-    m_chart->addAxis(axisY, Qt::AlignLeft);
-
-}
+using namespace std;
 
 mrc_gui::mrc_gui(QWidget *parent) :
     QWidget(parent)
@@ -138,7 +55,7 @@ mrc_gui::mrc_gui(QWidget *parent) :
     m_mean_real->setFixedWidth(120);
     m_mean_imag->setFixedWidth(120);
     m_Samples->setRange(0,50000);
-    m_Samples->setValue(5000);
+    m_Samples->setValue(4096);
     m_Samples->setFixedWidth(120);
     m_freq->setRange(0, 200);
     m_freq->setValue(91);
@@ -184,25 +101,12 @@ mrc_gui::mrc_gui(QWidget *parent) :
     m_formLayout->addWidget(m_mean_imag);
     m_formLayout->addWidget(refreshValues);
 
-    // CONFIGURE LAYOUT CHART SOC
-    //m_ChartLayoutSoC->addWidget(label_Chart_SoC, 0, 0);
-    //m_ChartLayoutSoC->addWidget(m_chartSoC, 1, 0);
-
-    // CONFIGURE LAYOUT CHART RXX
-    //m_ChartLayoutRXX->addWidget(label_Chart_RXX, 0, 0);
-    //m_ChartLayoutRXX->addWidget(m_chartRxx, 1, 0);
-
     // Create layout for grid and detached legend
     m_mainLayout = new QGridLayout();
     m_mainLayout->setColumnMinimumWidth(0, 120);
-    //m_mainLayout->setColumnStretch(0, 0);
     m_mainLayout->setColumnStretch(1, 10);
     m_mainLayout->addLayout(m_formLayout, 0, 0);
-    //m_mainLayout->addLayout(m_ChartLayoutSoC, 0, 1, 1, 1);
-    //m_mainLayout->addLayout(m_ChartLayoutRXX, 1, 1, 1, 1);
     m_mainLayout->addWidget(tabWidget, 0, 1);
-    //m_mainLayout->addWidget(m_chartSoC, 0, 1, 1, 1);
-    //m_mainLayout->addWidget(m_chartRxx, 1, 1, 1, 1);
     setLayout(m_mainLayout); 
 }
 
@@ -222,17 +126,21 @@ void mrc_gui::refreshValues()
     // TIME SET
     float t_s = m_ts->value();
     int samples = m_Samples->value();
+    float freq = m_freq->value();
+    float sig = m_sig->value();
 
     // COMPUTE MRC LIBRARY
     complex<float>* soc = new complex<float>[samples];
-    float* rxx = new float[samples];
-    float* irxx = new float[samples];
-    float* crxx = new float[samples];
+    complex<float>* rxx = new complex<float>[samples];
+    complex<float>* irxx = new complex<float>[samples];
+    complex<float>* crxx = new complex<float>[samples];
+    complex<float>* fft = new complex<float>[samples];
+
     float mu_r = 0;
     float mu_i = 0;
 
     // CLASS CALLS
-    SoC <float> floatSoC(m_N->value(), m_freq->value(), m_sig->value());
+    SoC <float> floatSoC(m_N->value(), freq, sig);
     if (radio1->isChecked()) floatSoC.Comp_EMEDS();
     if (radio2->isChecked()) floatSoC.Comp_GMEA();
     floatSoC.Comp_SoC(&soc[0], samples, t_s);                                   // Calculate SoC
@@ -243,14 +151,11 @@ void mrc_gui::refreshValues()
     mu_i = floatSoC.Mean_SoC(&soc[0], samples, false);
 
     // FFT
-    fftwf_complex *out = new fftwf_complex [samples]; /* Output */
-    //float *out = new float[samples];
-    fftwf_plan p; /* Plan */
-
-    p = fftwf_plan_dft_r2c_1d(samples, &rxx[0], &out[0], FFTW_ESTIMATE);
-
+    fftwf_plan p; // Plan
+    p = fftwf_plan_dft_1d(samples, reinterpret_cast<fftwf_complex*>(&rxx[0]),
+                                   reinterpret_cast<fftwf_complex*>(&fft[0]),
+                                   FFTW_FORWARD, FFTW_ESTIMATE);
     fftwf_execute(p);
-
     fftwf_destroy_plan(p);
 
     // CREATE POINT VECTOR SOC AND RXX
@@ -264,13 +169,14 @@ void mrc_gui::refreshValues()
     for (int i = 0; i < samples; i++) {
         dataSoC_r.append(QPointF(i * t_s, soc[i].real()));
         dataSoC_i.append(QPointF(i * t_s, soc[i].imag()));
-        dataRxx.append(QPointF(i * t_s, rxx[i]));
-        dataCRxx.append(QPointF(i * t_s, crxx[i]));
-        dataIRxx.append(QPointF(i * t_s, irxx[i]));
+        dataRxx.append(QPointF(i * t_s, rxx[i].real()));
+        dataCRxx.append(QPointF(i * t_s, crxx[i].real()));
+        dataIRxx.append(QPointF(i * t_s, irxx[i].real()));
     }
 
-    for (int i = 0; i < samples / 2 + 1; i++) {
-        dataPSD.append(QPointF(i, out[i][0]));
+    fft_shift(&fft[0], samples);
+    for (int i = 0; i < samples; i++) {
+        dataPSD.append(QPointF((i - samples/2) / (samples * t_s), abs(fft[i])));
     }
 
     // WRITE STATS VALUES ON GUI
@@ -354,7 +260,7 @@ void mrc_gui::refreshValues()
     seriesSoC_i->attachAxis(A.axisY);
 
     A.axisX->setRange(0, samples*t_s);
-    A.axisY->setRange(-5, 5);
+    A.axisY->setRange(-4*sig, 4*sig);
 
     // RENDER CHART WITH VALUES RXX
     seriesRxx->append(dataRxx);
@@ -386,10 +292,30 @@ void mrc_gui::refreshValues()
     C.m_chartPSD->setRenderHint(QPainter::Antialiasing);
     seriesPSD->attachAxis(C.axisX);
     seriesPSD->attachAxis(C.axisY);
-
+    C.axisX->setRange(-floor(freq*1.2), floor(freq*1.2));
     delete[] soc;
     delete[] rxx;
     delete[] crxx;
     delete[] irxx;
-    delete[] out;
+    delete[] fft;
+}
+
+void mrc_gui::fft_shift(complex<float>* A, int size){
+    int fr = floor((size + 1)/2);
+    complex<float> t = {0, 0};
+
+    if(size%2 == 0){
+        for (int i = fr; i < size; i++){
+            t = A[i - fr];
+            A[i - fr] = A[i];
+            A[i] = t;
+        }
+    }else{
+        for (int i = fr; i < size; i++){
+            t = A[i - fr + 1];
+            A[i - fr] = A[i];
+            A[i] = t;
+        }
+        A[fr - 1] = complex<float>(0, 0);;
+    }
 }
