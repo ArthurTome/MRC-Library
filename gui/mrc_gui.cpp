@@ -293,6 +293,7 @@ void mrc_gui::refreshValues()
     seriesPSD->attachAxis(C.axisX);
     seriesPSD->attachAxis(C.axisY);
     C.axisX->setRange(-floor(freq*1.2), floor(freq*1.2));
+    C.axisY->setRange(0, 175);
     delete[] soc;
     delete[] rxx;
     delete[] crxx;
