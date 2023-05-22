@@ -1,13 +1,13 @@
 #ifndef SOCTAB_H
 #define SOCTAB_H
 
+#include <QtWidgets>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtWidgets/QGridLayout>
 #include <QtCharts/QValueAxis>
 
 using namespace Qt;
-using namespace std;
 
 class SoCTab : public QWidget
 {
@@ -21,6 +21,10 @@ public:
     QGridLayout *m_ChartLayoutSoC;
     QValueAxis *axisX;
     QValueAxis *axisY;
+
+public slots:
+    void ShowContextMenu(const QPoint &pos);
+    void Save_Img();
 };
 
 #endif // SOCTAB_H

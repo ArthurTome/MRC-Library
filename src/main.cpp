@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
     floatSoC.Comp_EMEDS();                         // Compute parameter 
     floatSoC.Comp_SoC(soc.begin(), sz, 0.0001);    // Compute Sum os Cisoids
     //floatSoC.NRXX(soc.begin(), rxx.begin(), sz);
-    floatSoC.RXX(rxx.begin(), sz, 0.0001);
+    floatSoC.RXX(rxx.begin(), sz, 0.0001, sig);
 
     // FFT
     //fftwf_complex *out = new fftwf_complex [sz]; // Output

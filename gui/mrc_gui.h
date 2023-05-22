@@ -17,6 +17,9 @@
 #include <QtWidgets/QLabel>
 #include <QtCharts/QLineSeries>
 
+using namespace Qt;
+using namespace std;
+
 class mrc_gui : public QWidget
 {
     Q_OBJECT
@@ -24,9 +27,10 @@ public:
     explicit mrc_gui(QWidget *parent = 0);
     ~mrc_gui();
 
+    void fft_shift(complex<float>* A, int size);
+
 public Q_SLOTS:
     void refreshValues();
-    void fft_shift(complex<float>* A, int size);
 
 private:
     QTabWidget *tabWidget;

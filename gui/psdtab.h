@@ -1,10 +1,13 @@
 #ifndef PSDTAB_H
 #define PSDTAB_H
 
+#include <QtWidgets>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtWidgets/QGridLayout>
 #include <QtCharts/QValueAxis>
+
+using namespace Qt;
 
 class PSDTab : public QWidget
 {
@@ -18,6 +21,10 @@ public:
     QGridLayout *m_ChartLayoutPSD;
     QValueAxis *axisX;
     QValueAxis *axisY;
+
+public slots:
+    void ShowContextMenu(const QPoint &pos);
+    void Save_Img();
 
 };
 

@@ -82,7 +82,6 @@ mrc_gui::mrc_gui(QWidget *parent) :
     label_Chart_RXX->setText("Correlation Chart");
 
     // CONFIGURE LAYOUT INPUT
-    connect(refreshValues, SIGNAL(clicked()), this, SLOT(refreshValues()));
     m_formLayout->addWidget(radio1);
     m_formLayout->addWidget(radio2);
     m_formLayout->addWidget(label_N);
@@ -107,7 +106,10 @@ mrc_gui::mrc_gui(QWidget *parent) :
     m_mainLayout->setColumnStretch(1, 10);
     m_mainLayout->addLayout(m_formLayout, 0, 0);
     m_mainLayout->addWidget(tabWidget, 0, 1);
-    setLayout(m_mainLayout); 
+    setLayout(m_mainLayout);
+
+    // ACTIONS
+    connect(refreshValues, SIGNAL(clicked()), this, SLOT(refreshValues()));
 }
 
 mrc_gui::~mrc_gui()
@@ -144,9 +146,9 @@ void mrc_gui::refreshValues()
     if (radio1->isChecked()) floatSoC.Comp_EMEDS();
     if (radio2->isChecked()) floatSoC.Comp_GMEA();
     floatSoC.Comp_SoC(&soc[0], samples, t_s);                                   // Calculate SoC
-    floatSoC.NRXX(&soc[0], &rxx[0], samples);                                   // Calculate numeric correlation
-    floatSoC.CRXX(&soc[0], &crxx[0], samples);
-    floatSoC.IRXX(&irxx[0], samples, t_s);                                      // Calculate ideal correlation
+    floatSoC.NRXX(&soc[0], &rxx[0], samples, sig);                                   // Calculate numeric correlation
+    floatSoC.CRXX(&soc[0], &crxx[0], samples, sig);
+    floatSoC.IRXX(&irxx[0], samples, sig, t_s);                                      // Calculate ideal correlation
     mu_r = floatSoC.Mean_SoC(&soc[0], samples, true);
     mu_i = floatSoC.Mean_SoC(&soc[0], samples, false);
 

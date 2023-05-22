@@ -6,6 +6,10 @@ SoCTab::SoCTab(QWidget *parent): QWidget(parent)
     m_chart = new QChart();
     m_chartSoC = new QChartView(m_chart, this);
 
+    this->setContextMenuPolicy(CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
+            this, SLOT(ShowContextMenu(const QPoint &)));
+
     m_ChartLayoutSoC = new QGridLayout();
     m_ChartLayoutSoC->addWidget(m_chartSoC);
     setLayout(m_ChartLayoutSoC);
@@ -21,7 +25,25 @@ SoCTab::SoCTab(QWidget *parent): QWidget(parent)
     axisY->setTickInterval(1);
     axisY->setTickCount(5);
 
-    m_chart->addAxis(axisX, Qt::AlignBottom);
-    m_chart->addAxis(axisY, Qt::AlignLeft);
+    m_chart->addAxis(axisX, AlignBottom);
+    m_chart->addAxis(axisY, AlignLeft);
 
 }
+
+void SoCTab::ShowContextMenu(const QPoint &pos)
+{
+    QMenu contextMenu(tr("Context menu"), this);
+
+    QAction action1("Save Chart", this);
+    connect(&action1, SIGNAL(triggered()), this, SLOT(Save_Img()));
+    contextMenu.addAction(&action1);
+
+    contextMenu.exec(mapToGlobal(pos));
+}
+
+void SoCTab::Save_Img()
+{
+    QPixmap p = m_chartSoC->grab();
+    p.save("SoC.png", "PNG");
+}
+
