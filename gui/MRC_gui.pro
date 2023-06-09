@@ -9,7 +9,7 @@ QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 6): QT += widgets
 
-TARGET = MRC_gui
+TARGET = mrc_gui
 TEMPLATE = app
 CONFIG += c++20
 

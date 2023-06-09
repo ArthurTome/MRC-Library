@@ -27,7 +27,7 @@ public:
     explicit mrc_gui(QWidget *parent = 0);
     ~mrc_gui();
 
-    void fft_shift(complex<float>* A, int size);
+    void fft_shift(complex<float>* A, unsigned long size);
 
 public Q_SLOTS:
     void refreshValues();
@@ -35,15 +35,23 @@ public Q_SLOTS:
 private:
     QTabWidget *tabWidget;
     // Tab
-    SoCTab A;
-    RxxTab B;
-    PSDTab C;
+    SoCTab* A;
+    RxxTab* B;
+    PSDTab* C;
 
-    QList<QLineSeries *> m_seriesSoC;
-    QList<QLineSeries *> m_seriesRxx;
-    QList<QLineSeries *> m_seriesIRxx;
-    QList<QLineSeries *> m_seriesCRxx;
-    QList<QLineSeries *> m_seriesPSD;
+    // Vectors
+    complex<float> *soc;
+    complex<float> *rxx;
+    complex<float> *irxx;
+    complex<float> *crxx;
+    complex<float> *fft;
+
+    //QList<QPointF> *dataSoC_r;
+    //QList<QPointF> *dataSoC_i;
+    //QList<QPointF> *dataRxx;
+    //QList<QPointF> *dataCRxx;
+    //QList<QPointF> *dataIRxx;
+    //QList<QPointF> *dataPSD;
 
     QGridLayout *m_mainLayout;
     QFormLayout *m_formLayout;
@@ -67,8 +75,6 @@ private:
     QLabel *label_Real;
     QLabel *label_Imag;
 
-    QLabel *label_Chart_SoC;
-    QLabel *label_Chart_RXX;
 };
 
 #endif // MRC_GUI_H

@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.12)
 
 # Initialize project
-project ("MRC-Library")
+project ("mrc")
 
 # Configure output diretories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)

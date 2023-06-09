@@ -6,6 +6,7 @@
 #include <QtCharts/QChartView>
 #include <QtWidgets/QGridLayout>
 #include <QtCharts/QValueAxis>
+#include <QtCharts/QLineSeries>
 
 using namespace Qt;
 
@@ -15,12 +16,16 @@ class SoCTab : public QWidget
 
 public:
     explicit SoCTab(QWidget *parent = nullptr);
+    void Update_View(QList<QPointF> *SoC_r, QList<QPointF> *SoC_i, float sig, float max_t);
 
     QChart *m_chart;
     QChartView *m_chartSoC;
     QGridLayout *m_ChartLayoutSoC;
     QValueAxis *axisX;
     QValueAxis *axisY;
+
+    QLineSeries *seriesSoC_r;
+    QLineSeries *seriesSoC_i;
 
 public slots:
     void ShowContextMenu(const QPoint &pos);

@@ -17,45 +17,46 @@ template <class datat>
 class SoC{
     /* data */
     // Model parameters for the compute
+    private:
+        datat *mod;                                         // Pointer to route amplitude
+        datat *freq;                                        // Pointer to doppler frequency
+        datat *phas;                                        // Pointer to phase deviation
+
+        datat freq_max;                                     // Max Frequency
+        datat sig;                                          // Standard Deviation
+        datat mean;                                         // Mean of log process
+        short N;                                            // Number of cisoids
+
     public:
-    datat *mod;                                         // Pointer to route amplitude
-    datat *freq;                                        // Pointer to doppler frequency
-    datat *phas;                                        // Pointer to phase deviation
-
-    datat freq_max;                                     // Max Frequency
-    datat sig;                                          // Standard Deviation
-    datat mean;                                         // Mean of log process
-    short N;                                            // Number of cisoids
-
     /* functions */
 
     /// @brief Construct to class, initialize arrays of parameters
     /// @param N Size of parameters arrays
     /// @param freq_t frequency maximum
     /// @param sig_t standard deviarion
-    SoC(short N_t, datat freq_t, datat sig_t):freq_max(freq_t), sig(sig_t),mean(0),N(N_t)
+    SoC(short N_t, datat freq_t, datat sig_t):freq_max(freq_t), sig(sig_t), mean(0), N(N_t)
     {
         mod  = new datat[N];                            // Initialize route amplitude array
         freq = new datat[N];                            // Initialize doppler frequency array
         phas = new datat[N];                            // Initialize phase deviation array
 
         for (int i = 0; i < N; i++) {
-            mod[i] = 0;
-            freq[i] = 0;
-            phas[i] = 0;
+            mod[i] = 0.0;
+            freq[i] = 0.0;
+            phas[i] = 0.0;
         }
     }
 
-    SoC(short N_t, datat freq_t, datat sig_t, datat mean_t):freq_max(freq_t), sig(sig_t),mean(0),N(N_t)
+    SoC(short N_t, datat freq_t, datat sig_t, datat mean_t):freq_max(freq_t), sig(sig_t), mean(mean_t), N(N_t)
     {
         mod  = new datat[N];                            // Initialize route amplitude array
         freq = new datat[N];                            // Initialize doppler frequency array
         phas = new datat[N];                            // Initialize phase deviation array
 
         for (int i = 0; i < N; i++) {
-            mod[i] = 0;
-            freq[i] = 0;
-            phas[i] = 0;
+            mod[i] = 0.0;
+            freq[i] = 0.0;
+            phas[i] = 0.0;
         }
     }
 
@@ -70,10 +71,10 @@ class SoC{
     /// @param rxx Pointer to external rxx buffer
     /// @param size legth of vector rxx
     /// @param ts time step
-    void IRXX(complex<datat>* rxx, datat size, datat sig, datat ts)
+    void IRXX(complex<datat>* rxx, unsigned long size, datat sig, datat ts)
     {
         //int num = (t / ts) + 1;             // length for time, [0, t - ts]
-        for (int t_i = 0; t_i < size + 1; t_i++)
+        for (unsigned long t_i = 0; t_i < size + 1; t_i++)
         {
             //rxx[t_i] = 0;
             rxx[t_i] = complex<datat>(pow(sig, 2) * cyl_bessel_j(0, 2 * M_PI * freq_max * t_i * ts)/ pow(sig, 2), 0);
@@ -84,9 +85,9 @@ class SoC{
     /// @param rxx Pointer to external irxx buffer
     /// @param size legth of vector rxx
     /// @param ts time step
-    void RXX(complex<datat>* rxx, datat size, datat sig, datat ts) {
+    void RXX(complex<datat>* rxx, unsigned long size, datat sig, datat ts) {
         //int num = (t / ts) + 1;
-        for (int t_i = 0; t_i < size + 1; t_i++)
+        for (unsigned long t_i = 0; t_i < size + 1; t_i++)
         {
             rxx[t_i] = complex<datat>(0, 0);
             for (short i = 0; i < N; i++)                       //Compute 
@@ -102,15 +103,15 @@ class SoC{
     /// @param soc Pointer to external soc buffer
     /// @param rxx Pointer to external rxx buffer
     /// @param size Legth of vector rxx and soc
-    void NRXX(complex<datat>* soc, complex<datat>* rxx, datat size, datat sig) {
+    void NRXX(complex<datat>* soc, complex<datat>* rxx, unsigned long size, datat sig) {
         //int s_soc = (t / ts) + 1;
 
-        for (int t_i = 0; t_i < size + 1; t_i++)
+        for (unsigned long t_i = 0; t_i < size + 1; t_i++)
         {
             rxx[t_i] = complex<datat>(0, 0);
-            for (short i = t_i; i < size + 1 ; i++)
+            for (unsigned long i = t_i; i < size + 1 ; i++)
             {
-                rxx[t_i] += complex<datat>((soc[i-t_i] * conj(soc[i])).real() / (2 * size * pow(sig, 2)), 0);
+                rxx[t_i] += complex<datat>((soc[i-t_i] * conj(soc[i])).real() / (2 * (float)size * pow(sig, 2)), 0);
             }
         }                    
     }
@@ -120,13 +121,13 @@ class SoC{
     /// @param soc Pointer to external soc buffer
     /// @param rxx Pointer to external rxx buffer
     /// @param size Legth of vector rxx and soc
-    void CRXX (complex<datat>* soc, complex<datat>* rxx, int size, datat sig) {
+    void CRXX (complex<datat>* soc, complex<datat>* rxx, unsigned long size, datat sig) {
         //int s_soc = (t / ts) + 1;
 
-        for (int t_i = 0; t_i < size + 1; t_i++)
+        for (unsigned long t_i = 0; t_i < size + 1; t_i++)
         {
             rxx[t_i] = complex<datat>(0, 0);
-            for (short i = t_i; i < size + 1 ; i++)
+            for (unsigned long i = t_i; i < size + 1 ; i++)
             {
                 rxx[t_i] += complex<datat>((soc[i-t_i].real() * soc[i].imag()) / (2 * size * pow(sig, 2)), 0);
             }
@@ -135,23 +136,23 @@ class SoC{
 
     /// @brief Compute statistical properties of SoC
     /// @param soc Pointer to external soc buffer
-    datat Mean_SoC(complex<datat>* soc, int size, bool rc_p)
+    datat Mean_SoC(complex<datat>* soc, unsigned long size, bool rc_p)
     {
-        auto mu = 0;
-        for (int i = 0; i < size + 1; i++){
+        datat mu = 0.0;
+        for (unsigned long i = 0; i < size + 1; i++)
+        {
             mu += (rc_p) ? soc[i].real():soc[i].imag();
         }
-
-
+        
         return mu/(float)size;
     }
 
 
-    datat Var_SoC(complex<datat>* soc, int size, bool rc_p)
+    datat Var_SoC(complex<datat>* soc, unsigned long size, bool rc_p)
     {
         datat mu_t = Mean_SoC(soc, size, rc_p);
-        auto var = 0;
-        for (int i = 0; i < size + 1; i++){
+        datat var = 0.0;
+        for (unsigned long i = 0; i < size + 1; i++){
             var += (rc_p) ? pow(soc[i].real() - mu_t, 2) :pow(soc[i].imag() - mu_t, 2);
         }
 
@@ -159,10 +160,10 @@ class SoC{
     }
 
 
-    datat PSD_SoC(complex<datat>* soc, int size)
+    datat PSD_SoC(complex<datat>* soc, unsigned long size)
     {
         datat mu = 0;
-        for (int i = 0; i < size + 1; i++){
+        for (unsigned long i = 0; i < size + 1; i++){
             mu += abs(soc[i]);
         }
 
@@ -173,11 +174,11 @@ class SoC{
     /// @param mu_t Pointer to external SoC buffer
     /// @param size legth of vector rxx
     /// @param ts time step
-    void Comp_SoC(complex<datat>* soc, int size, datat ts) {
+    void Comp_SoC(complex<datat>* soc, unsigned long size, datat ts) {
         //int num = size + 1;
         Comp_phas();
 
-        for (int t_i = 0; t_i < size + 1; t_i++)
+        for (unsigned long t_i = 0; t_i < size + 1; t_i++)
         {
             soc[t_i] = 0;
             for (short i = 0; i < N; i++)                     //Compute 
@@ -195,10 +196,10 @@ class SoC{
     /// @param t_mod amplitude component for Line of Sight
     /// @param t_freq frequecy component for Line of Sight
     /// @param t_phas phase component for Line of Sight
-    void Define_VLC(complex<datat>* vlc, datat size, datat ts, datat t_mod, datat t_freq, datat t_phas)
+    void Define_VLC(complex<datat>* vlc, unsigned long size, datat ts, datat t_mod, datat t_freq, datat t_phas)
     {
         //int num = (t / ts) + 1;
-        for (int t_i = 0; t_i < size + 1; t_i++)                       //Create time vector simulation
+        for (unsigned long t_i = 0; t_i < size + 1; t_i++)                       //Create time vector simulation
         {
             vlc[t_i] += complex<datat>(t_mod, 0) * exp(complex<datat>(0, 2 * M_PI * t_freq * (t_i * ts) + t_phas));
         }
@@ -236,10 +237,20 @@ class SoC{
         }
     }
 
-    void Log_Process(datat* log, complex<datat>* soc_t, datat size, datat mean, datat sig) {
+    void Log_Process(datat* log, complex<datat>* soc_t, unsigned long size, datat mean, datat sig) {
 
-        for (int t_i = 0; t_i < size; t_i++) log[t_i] = exp(sig * real(soc_t[t_i]) + mean);
+        for (unsigned long t_i = 0; t_i < size; t_i++) log[t_i] = exp(sig * real(soc_t[t_i]) + mean);
     }
+
+    private:
+    /*
+    void progress_bar(unsigned long min, unsigned long max, unsigned long index){
+        float progress = 0.0;
+        progress = ((float)(index-min)*(float)(max-min))/(float)(max-min); 
+
+        std::cout << progress << "  ";
+    }
+    */
 };
 
 #endif
