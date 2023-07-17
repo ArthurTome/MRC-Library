@@ -8,18 +8,16 @@
 #include <complex>
 
 #include <QtWidgets>
-#include <QtCharts/QChart>
-#include <QtCharts/QChartView>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QGraphicsWidget>
 #include <QtWidgets/QGraphicsGridLayout>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QLabel>
-#include <QtCharts/QLineSeries>
 
 using namespace Qt;
 using namespace std;
 
+/// @brief Class for creating the program interface, inputting, and updating chart information.
 class mrc_gui : public QWidget
 {
     Q_OBJECT
@@ -27,31 +25,27 @@ public:
     explicit mrc_gui(QWidget *parent = 0);
     ~mrc_gui();
 
-    void fft_shift(complex<float>* A, unsigned long size);
+    void FFT_shift(complex<double>* A, unsigned long size);
 
 public Q_SLOTS:
-    void refreshValues();
+    void RefreshValues();
 
 private:
     QTabWidget *tabWidget;
+
     // Tab
     SoCTab* A;
     RxxTab* B;
     PSDTab* C;
 
     // Vectors
-    complex<float> *soc;
-    complex<float> *rxx;
-    complex<float> *irxx;
-    complex<float> *crxx;
-    complex<float> *fft;
-
-    //QList<QPointF> *dataSoC_r;
-    //QList<QPointF> *dataSoC_i;
-    //QList<QPointF> *dataRxx;
-    //QList<QPointF> *dataCRxx;
-    //QList<QPointF> *dataIRxx;
-    //QList<QPointF> *dataPSD;
+    complex<double> *soc;
+    complex<double> *rxx;
+    complex<double> *rxx_t;
+    complex<double> *irxx;
+    complex<double> *crxx;
+    complex<double> *fft;
+    complex<double> *ifft;
 
     QGridLayout *m_mainLayout;
     QFormLayout *m_formLayout;
@@ -61,8 +55,10 @@ private:
     QDoubleSpinBox *m_ts;
     QDoubleSpinBox *m_freq;
     QDoubleSpinBox *m_sig;
+    QDoubleSpinBox *m_rep;
     QLineEdit *m_mean_real;
     QLineEdit *m_mean_imag;
+    QLineEdit *m_execT;
 
     QRadioButton *radio1;
     QRadioButton *radio2;
@@ -74,6 +70,8 @@ private:
     QLabel *label_Variance;
     QLabel *label_Real;
     QLabel *label_Imag;
+    QLabel *label_Rep;
+    QLabel *label_ExecT;
 
 };
 

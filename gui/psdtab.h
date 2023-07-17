@@ -10,23 +10,27 @@
 
 using namespace Qt;
 
+/// @brief Class for creating and organizing the charts in the psd tab.
 class PSDTab : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit PSDTab(QWidget *parent = nullptr);
-    void Update_View(QList<QPointF> *PSD, float freq);
+    void Update_View(QList<QPointF> *PSD, QList<QPointF> *iPSD, double freq);
 
+private:
     QChart *m_chart;
     QChartView *m_chartPSD;
     QGridLayout *m_ChartLayoutPSD;
     QValueAxis *axisX;
     QValueAxis *axisY;
 
+    //QScatterSeries *seriesPSD;
     QLineSeries *seriesPSD;
+    QLineSeries *seriesiPSD;
 
-public slots:
+private slots:
     void ShowContextMenu(const QPoint &pos);
     void Save_Img();
 

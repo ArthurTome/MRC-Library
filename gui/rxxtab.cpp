@@ -1,5 +1,6 @@
 #include "rxxtab.h"
 
+/// \brief RxxTab::RxxTab as class constructor to Tab graph
 RxxTab::RxxTab(QWidget *parent): QWidget(parent)
 {
     // LINE SERIES
@@ -43,7 +44,7 @@ RxxTab::RxxTab(QWidget *parent): QWidget(parent)
     // LABELS
     seriesRxx->setName("AutoCorr");
     seriesCRxx->setName("CrossCorr");
-    seriesIRxx->setName("JakesCorr");
+    seriesIRxx->setName("ModelCorr");
 
     // LINE ADJUSTMENTS FOR RXX
     QPen penRxx = seriesRxx->pen();
@@ -71,14 +72,20 @@ RxxTab::RxxTab(QWidget *parent): QWidget(parent)
     seriesIRxx->attachAxis(axisX);
     seriesIRxx->attachAxis(axisY);
 
-    // ==============================================================
-
+    // ==========================================================================
     this->setContextMenuPolicy(CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(QPoint)),
             this, SLOT(ShowContextMenu(QPoint)));
-
 }
-void RxxTab::Update_View(QList<QPointF> *Rxx, QList<QPointF> *CRxx, QList<QPointF> *NRxx, float max_t)
+
+///
+/// \brief RxxTab::Update_View UPDATE VIEW GRAPH
+/// \param Rxx Ideal Correlation
+/// \param CRxx Cross Correlation
+/// \param NRxx Numeric Correlation
+/// \param T MAX TIME (NUMBER OF SAMPLES) * (SAMPLE_TIME)
+/// \param tmax maximum coehrence time
+void RxxTab::Update_View(QList<QPointF> *Rxx, QList<QPointF> *CRxx, QList<QPointF> *NRxx, double T, double tmax)
 {
     // RENDER CHART WITH VALUES SOC
     if(seriesRxx->count() != 0) seriesRxx->clear();
@@ -89,22 +96,41 @@ void RxxTab::Update_View(QList<QPointF> *Rxx, QList<QPointF> *CRxx, QList<QPoint
     seriesCRxx->replace(*CRxx);
     seriesIRxx->replace(*NRxx);
 
-    axisX->setRange(0, max_t);
+    axisX->setRange(0, T);
+    this->tmax = tmax;
 }
 
+///
+/// \brief SoCTab::ShowContextMenu CONTEXT MENU FIGURE
+///
 void RxxTab::ShowContextMenu(const QPoint &pos)
 {
     QMenu contextMenu(tr("Context menu"), this);
 
     QAction action1("Save Chart", this);
     connect(&action1, SIGNAL(triggered()), this, SLOT(Save_Img()));
-    contextMenu.addAction(&action1);
 
+    QAction action2("Zoom in Tal", this);
+    connect(&action2, SIGNAL(triggered()), this, SLOT(Zoom_Tal()));
+
+    contextMenu.addAction(&action1);
+    contextMenu.addAction(&action2);
     contextMenu.exec(mapToGlobal(pos));
 }
 
+///
+/// \brief RxxTab::Save_Img Save image chart in png
+///
 void RxxTab::Save_Img()
 {
     QPixmap p = m_chartRxx->grab();
     p.save("Rxx.png", "PNG");
+}
+
+///
+/// \brief RxxTab::Zoom in coerence time
+///
+void RxxTab::Zoom_Tal()
+{
+    axisX->setRange(0, tmax);
 }

@@ -1,14 +1,28 @@
 /** INTERFACE BASICA EM C++
+ *  mrc 
+ * INPUT:
+ *  --gmea  
+ *  --emeds 
+ *  --lpnrm (IN PROGRESS)
+ * 
+ * OUTPUT:
+ *  --soc   process 
+ *  --rxx   autocorrelation
+ *  --fft   fourrier transform process
  *  
- *  
+ * PARAMETERS:
+ *  --ncis  number of cisoids
+ *  --freq  max frequency
+ *  --sig   standad deviation
+ *  --size  sample number
+ *  --ts    step time
 */
 
 #include <iostream>
 #include <complex>
-#include "MRC.hpp"
+#include "mrc.hpp"
 #include <fftw3.h>
-
-//#include <chrono>
+#include <chrono>
 
 using namespace std;
 
@@ -37,11 +51,12 @@ void fft_shift(complex<double>* A, unsigned long size){
 
 int main(int argc, char *argv[]){
     // |=====================| DEFAULT PARAMETERS |======================|
-    short N = 21;
-    double freq = 91;
-    double sig = 1;
-    double ts = 0.0001;
-    unsigned long sz = 8000;
+    short N = 21;                   // Nº Cisoids
+    double freq = 91;               // M Frequency
+    double sig = 1;                 // Standart Deviation
+    double ts = 0.0001;             // Time step
+    unsigned long sz = 8192;        // Size Vector
+    cout.precision(6);              // Cout Precision
 
     // |======================| CONSOLE OPTIONS |========================|
     if (argc < 3) {
@@ -91,15 +106,13 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
-    cout << N << ' ' << freq << ' ' << sig << ' ' << sz << ' ';
-
     // |=======================| DECLARE ARRAYS |========================|
     complex<double>* soc = new complex<double>[sz]();
     complex<double>* rxx = new complex<double>[sz]();
     complex<double>* fft = new complex<double>[sz]();
 
     // |=======================|  START FUNCTION |=======================|
-    //auto start = chrono::high_resolution_clock::now();  // GET INIT TIME
+    auto start = chrono::high_resolution_clock::now();  // GET INIT TIME
     SoC <double> dSoC(N, freq, sig);                    // Initialize class <float> 
                                                         // with frequency 91 and standard deviation 1
     if (string(argv[1]) == "--emeds")
@@ -112,7 +125,6 @@ int main(int argc, char *argv[]){
     }
     
     dSoC.Comp_SoC(&soc[0], sz, ts);                     // Compute Sum os Cisoids
-    cout.precision(6);
 
     if((string(argv[2]) == "--rxx")||(string(argv[2]) == "--fft")){
         dSoC.NRXX(&soc[0], &rxx[0], sz, sig);           // Compute numeric correlation for rxx and fft outputs
@@ -132,9 +144,9 @@ int main(int argc, char *argv[]){
             fftw_destroy_plan(p);
             fft_shift(&fft[0], sz);
 
-            for (unsigned long i = 0; i < sz; i++){
-                cout << abs(fft[i]) << ", ";            // OUT FFT
-            }
+            //for (unsigned long i = 0; i < sz; i++){
+            //    cout << abs(fft[i]) << ", ";            // OUT FFT
+            //}
         }
     } else {
         // |============================| SOC |=============================|
@@ -143,17 +155,19 @@ int main(int argc, char *argv[]){
         }
     }
 
-    //auto stop = chrono::high_resolution_clock::now();  // GET TIME
-    //auto duration = duration_cast<chrono::microseconds>(stop - start);
+    auto stop = chrono::high_resolution_clock::now();  // GET TIME
+    auto duration = duration_cast<chrono::microseconds>(stop - start);
     // |============================|  OUT |=============================|
 
     // NOT NECESSARY MAKE ERROR DOUBLE FREE OR CORRUPT
     //delete[] soc;
     //delete[] rxx;
     //delete[] fft;
-
-    //cout << "\nDONE\n";
-    //cout << "EXECUTE TIME(s): " << duration.count()/1000000.0 << '\n';
+    
+    // |======================| SHOW CONFIG VALUES |=====================|
+    cout << '\n'<< N << ' ' << freq << ' ' << sig << ' ' << sz << ' ';
+    cout << "\nDONE\n";
+    cout << "EXECUTE TIME(s): " << duration.count()/1000000.0 << '\n';
     //cout << "CHANNEL DURATION(s): " << ts*(float)sz << '\n';
 
     return 0;

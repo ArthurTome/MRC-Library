@@ -10,14 +10,16 @@
 
 using namespace Qt;
 
+/// @brief Class for creating and organizing the charts in the signal tab.
 class SoCTab : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit SoCTab(QWidget *parent = nullptr);
-    void Update_View(QList<QPointF> *SoC_r, QList<QPointF> *SoC_i, float sig, float max_t);
+    void Update_View(QList<QPointF> *SoC_r, QList<QPointF> *SoC_i, double sig, double max_t);
 
+private:
     QChart *m_chart;
     QChartView *m_chartSoC;
     QGridLayout *m_ChartLayoutSoC;
@@ -27,7 +29,7 @@ public:
     QLineSeries *seriesSoC_r;
     QLineSeries *seriesSoC_i;
 
-public slots:
+private slots:
     void ShowContextMenu(const QPoint &pos);
     void Save_Img();
 };

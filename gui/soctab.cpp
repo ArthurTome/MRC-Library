@@ -1,5 +1,6 @@
 #include "soctab.h"
 
+/// \brief SoCTab::SoCTab as class constructor to Tab graph
 SoCTab::SoCTab(QWidget *parent): QWidget(parent)
 {
     // LINE SERIES
@@ -64,7 +65,7 @@ SoCTab::SoCTab(QWidget *parent): QWidget(parent)
     seriesSoC_i->attachAxis(axisX);
     seriesSoC_i->attachAxis(axisY);
 
-    // ==============================================================
+    // ==========================================================================
 
     this->setContextMenuPolicy(CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(QPoint)),
@@ -79,7 +80,7 @@ SoCTab::SoCTab(QWidget *parent): QWidget(parent)
 /// \param sig STANDARD DEVIATION
 /// \param max_t MAX TIME (NUMBER OF SAMPLES) * (SAMPLE_TIME)
 ///
-void SoCTab::Update_View(QList<QPointF> *SoC_r, QList<QPointF> *SoC_i, float sig, float max_t)
+void SoCTab::Update_View(QList<QPointF> *SoC_r, QList<QPointF> *SoC_i, double sig, double max_t)
 {
     // RENDER CHART WITH VALUES SOC
     if(seriesSoC_r->count() != 0) seriesSoC_r->clear();

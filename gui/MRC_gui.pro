@@ -13,7 +13,10 @@ TARGET = mrc_gui
 TEMPLATE = app
 CONFIG += c++20
 
-LIBS += "/usr/local/lib/libfftw3f.a"
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS += -fopenmp
+
+LIBS += "/usr/local/lib/libfftw3.a"
 
 SOURCES += main.cpp\
         mrc_gui.cpp \
@@ -22,7 +25,7 @@ SOURCES += main.cpp\
         soctab.cpp
 
 HEADERS  += mrc_gui.h\
-            ../src/MRC.hpp \
+            ../src/mrc.hpp \
             psdtab.h \
             rxxtab.h \
             soctab.h
