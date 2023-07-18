@@ -98,6 +98,7 @@ class SoC{
         #pragma omp for
         for (unsigned long t_i = 0; t_i < size; t_i++)
         {
+            rxx[t_i] = complex<datat>(0, 0);
             for (short i = 0; i < N; i++)                       //Compute 
             {
                 //C1*EXP(i*[2pi*F*t + Theta])
@@ -117,6 +118,7 @@ class SoC{
         #pragma omp for
         for (unsigned long t_i = 0; t_i < size; t_i++)
         {
+            rxx[t_i] = complex<datat>(0, 0);
             for (unsigned long i = t_i; i < size; i++)
             {
                 rxx[t_i] += complex<datat>((soc[i-t_i] * conj(soc[i])).real() / (2.0 * (float)size * pow(sig, 2)), 0.0);
@@ -135,6 +137,7 @@ class SoC{
         #pragma omp for
         for (unsigned long t_i = 0; t_i < size; t_i++)
         {
+            rxx[t_i] = complex<datat>(0, 0);
             for (unsigned long i = t_i; i < size; i++)
             {
                 rxx[t_i] += complex<datat>((soc[i-t_i].real() * soc[i].imag()) / (2.0 * (float)size * pow(sig, 2)), 0.0);

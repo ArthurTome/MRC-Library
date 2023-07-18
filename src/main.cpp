@@ -26,6 +26,8 @@
 
 using namespace std;
 
+const char help[] = "INPUT:\n--gmea\n--emeds\n\nOUTPUT:\n--soc   process\n--rxx   autocorrelation\n--fft   fourrier transform process\n\nPARAMETERS:\n--ncis  number of cisoids\n--freq  max frequency\n--sig   standad deviation\n--size  sample number\n--ts    step time\n";
+
 /// @brief FFT shift make negative and positive frequencys centralized in vector
 /// @param A VECTOR FFT
 /// @param size size of vector
@@ -60,10 +62,12 @@ int main(int argc, char *argv[]){
 
     // |======================| CONSOLE OPTIONS |========================|
     if (argc < 3) {
+        if ((argc == 2)&&(string(argv[1]) == "--help")){
+            cout << help;
+        }
         return 0;
     }
-    if ((string(argv[1]) != "--help")&&
-        (string(argv[1]) != "--emeds")&&
+    if ((string(argv[1]) != "--emeds")&&
         (string(argv[1]) != "--gmea")){
         cout << "Parametros informados" << '\n';
         return 1;
@@ -144,9 +148,9 @@ int main(int argc, char *argv[]){
             fftw_destroy_plan(p);
             fft_shift(&fft[0], sz);
 
-            //for (unsigned long i = 0; i < sz; i++){
-            //    cout << abs(fft[i]) << ", ";            // OUT FFT
-            //}
+            for (unsigned long i = 0; i < sz; i++){
+                cout << abs(fft[i]) << ", ";            // OUT FFT
+            }
         }
     } else {
         // |============================| SOC |=============================|
@@ -158,17 +162,15 @@ int main(int argc, char *argv[]){
     auto stop = chrono::high_resolution_clock::now();  // GET TIME
     auto duration = duration_cast<chrono::microseconds>(stop - start);
     // |============================|  OUT |=============================|
-
-    // NOT NECESSARY MAKE ERROR DOUBLE FREE OR CORRUPT
-    //delete[] soc;
-    //delete[] rxx;
-    //delete[] fft;
-    
-    // |======================| SHOW CONFIG VALUES |=====================|
     cout << '\n'<< N << ' ' << freq << ' ' << sig << ' ' << sz << ' ';
     cout << "\nDONE\n";
     cout << "EXECUTE TIME(s): " << duration.count()/1000000.0 << '\n';
     //cout << "CHANNEL DURATION(s): " << ts*(float)sz << '\n';
+
+    // |========================| DELETE MOMORY |========================|
+    delete[] soc;
+    delete[] rxx;
+    delete[] fft;
 
     return 0;
 }
