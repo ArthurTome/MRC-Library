@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['rxxtab_21',['RxxTab',['../classRxxTab.html',1,'']]]
+  ['rxxtab_26',['RxxTab',['../classRxxTab.html',1,'']]]
 ];

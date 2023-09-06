@@ -1,3 +1,8 @@
+/**
+ * @file mrc_gui.h
+ * @brief app for display mrc
+*/
+
 #ifndef MRC_GUI_H
 #define MRC_GUI_H
 

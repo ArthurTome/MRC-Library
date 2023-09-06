@@ -53,7 +53,7 @@ void fft_shift(complex<double>* A, unsigned long size){
 
 int main(int argc, char *argv[]){
     // |=====================| DEFAULT PARAMETERS |======================|
-    short N = 21;                   // Nº Cisoids
+    unsigned short N = 21;                   // Nº Cisoids
     double freq = 91;               // M Frequency
     double sig = 1;                 // Standart Deviation
     double ts = 0.0001;             // Time step
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]){
         }
 
         if (string(argv[i]) == "--sig"){
-            sig = atoi(argv[i+1]);
+            sig = atof(argv[i+1]);
             continue;
         }
 

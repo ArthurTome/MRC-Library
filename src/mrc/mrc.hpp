@@ -1,3 +1,7 @@
+/**
+ * @file mrc.hpp
+ * @brief class template for sum of cisoids 
+*/
 #ifndef MRC_HPP
 #define MRC_HPP
 
@@ -254,16 +258,6 @@ class SoC{
 
         for (unsigned long t_i = 0; t_i < size; t_i++) log[t_i] = exp(sig * real(soc_t[t_i]) + mean);
     }
-
-    private:
-    /*
-    void progress_bar(unsigned long min, unsigned long max, unsigned long index){
-        float progress = 0.0;
-        progress = ((float)(index-min)*(float)(max-min))/(float)(max-min); 
-
-        std::cout << progress << "  ";
-    }
-    */
 };
 
 #endif

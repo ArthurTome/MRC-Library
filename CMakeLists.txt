@@ -12,4 +12,4 @@ SET(CMAKE_CXX_FLAGS "-lm -lfftw3 -fopenmp -lpthread")
 SET(CMAKE_C_FLAGS   "-lm -lfftw3")
 
 # Subdiretory
-add_subdirectory ("src")
+add_subdirectory ("src/mrc")

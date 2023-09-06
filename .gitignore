@@ -25,6 +25,7 @@
 *.la
 *.a
 *.lib
+*.pro.user*
 
 # Executables
 *.exe
@@ -35,11 +36,9 @@
 .vscode/
 .vs/
 src/out/
-build-MRC_gui-Desktop_Qt_6_5_0_GCC_64bit-Debug/
-build-MRC_gui-Desktop-Debug
 build/
+build-*
 bin/
 
 #vs files
 *.json
-*.user

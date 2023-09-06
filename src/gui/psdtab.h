@@ -1,3 +1,7 @@
+/**
+ * @file psdtab.h
+ * @brief display tab for power spectral density
+*/
 #ifndef PSDTAB_H
 #define PSDTAB_H
 

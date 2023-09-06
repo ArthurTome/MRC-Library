@@ -1,5 +1,5 @@
 #include "mrc_gui.h"
-#include "../src/mrc.hpp"
+#include "../mrc/mrc.hpp"
 
 #include <cmath>
 #include <fftw3.h>
@@ -69,6 +69,7 @@ mrc_gui::mrc_gui(QWidget *parent) :
     m_ts->setValue(0.0001);
     m_ts->setFixedWidth(120);
     m_N->setValue(21);
+    m_N->setRange(21, 1000);
     m_N->setFixedWidth(120);
     m_sig->setValue(1);
     m_sig->setFixedWidth(120);

@@ -1,3 +1,7 @@
+/**
+ * @file rxxtab.h
+ * @brief display tab for corralation
+*/
 #ifndef RXXTAB_H
 #define RXXTAB_H
 

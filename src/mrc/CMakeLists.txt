@@ -1,7 +1,7 @@
 ﻿#cmake_minimum_required (VERSION 3.12)
 
 # List source files to executable
-add_executable (${PROJECT_NAME} "main.cpp" "mrc.hpp" "mrc.cpp")
+add_executable (${PROJECT_NAME} "main.cpp" "mrc.hpp")
 
 target_link_libraries(${PROJECT_NAME} /usr/local/lib/libfftw3.a)
 

@@ -88,7 +88,7 @@ Example</h2>
 <div class="line">dSoC.Comp_EMEDS();                      <span class="comment">// EMEDS</span></div>
 <div class="line"><span class="comment">// or</span></div>
 <div class="line">dSoC.Comp_GMEA();                       <span class="comment">// GMEA</span></div>
-<div class="ttc" id="aclassSoC_html"><div class="ttname"><a href="classSoC.html">SoC</a></div><div class="ttdoc">class for simulation based on sum of cisoids</div><div class="ttdef"><b>Definition:</b> mrc.hpp:17</div></div>
+<div class="ttc" id="aclassSoC_html"><div class="ttname"><a href="classSoC.html">SoC</a></div><div class="ttdoc">class for simulation based on sum of cisoids</div><div class="ttdef"><b>Definition:</b> mrc.hpp:21</div></div>
 </div><!-- fragment --><p> The class provides several output methods. If the intention is only to calculate the signal, simply use 'dSoC.Comp_SoC(&amp;soc, sz, ts)', passing the memory reference and the information of its size and time step. The method 'dSoC.NRXX' uses the generated signal to calculate its autocorrelation. Similar to the previous method, it requires the memory information and size, and additionally, the standard deviation for normalization.</p>
 <div class="fragment"><div class="line">dSoC.Comp_SoC(&amp;soc[0], sz, ts);         <span class="comment">// Compute Sum os Cisoids</span></div>
 <div class="line">dSoC.NRXX(&amp;soc[0], &amp;rxx[0], sz, sig);   <span class="comment">// Compute numeric correlation</span></div>

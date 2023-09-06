@@ -1,3 +1,7 @@
+/**
+ * @file soctab.h
+ * @brief display tab for sum of cisoids
+*/
 #ifndef SOCTAB_H
 #define SOCTAB_H
 
